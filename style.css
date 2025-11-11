@@ -1,0 +1,281 @@
+:root {
+    --flag-green: #007a4d;
+    --flag-gold: #ffb400;
+    --flag-red: #de1f26;
+    --flag-blue: #003b6f;
+    --flag-black: #1d1d1b;
+    --sand: #f9f4ec;
+    --card: rgba(255, 255, 255, 0.92);
+    --text: #1f2a33;
+    --muted: #4f5a5e;
+    font-size: 16px;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: "Montserrat", sans-serif;
+    background: linear-gradient(180deg, #fdfaf3 0%, #f2ede0 100%);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.banner {
+    position: relative;
+    background: url("https://images.unsplash.com/photo-1496417263034-38ec4f0b665a?auto=format&fit=crop&w=1470&q=80")
+        center/cover no-repeat;
+    color: white;
+    padding: 4rem 1.5rem;
+    text-align: center;
+    overflow: hidden;
+}
+
+.banner__overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(0, 122, 77, 0.9), rgba(0, 59, 111, 0.85));
+}
+
+.banner__content {
+    position: relative;
+    z-index: 1;
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+.banner h1 {
+    margin: 0;
+    font-size: clamp(2.5rem, 5vw, 3.5rem);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.tagline {
+    font-size: 1.125rem;
+    margin-top: 1rem;
+}
+
+main {
+    width: min(960px, 90vw);
+    margin: -2.5rem auto 3rem;
+    background: transparent;
+    flex: 1;
+}
+
+section {
+    margin-bottom: 2.5rem;
+    background: var(--card);
+    border-radius: 1.5rem;
+    padding: 1.75rem;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.08);
+}
+
+.intro p {
+    margin: 0;
+    line-height: 1.6;
+}
+
+.setup h2,
+.game h2,
+.tips h2 {
+    margin-top: 0;
+}
+
+#setup-form {
+    display: grid;
+    gap: 1rem;
+}
+
+label {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+}
+
+input,
+select {
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    border: 2px solid transparent;
+    background: rgba(255, 255, 255, 0.9);
+    font-size: 1rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input:focus,
+select:focus {
+    outline: none;
+    border-color: var(--flag-gold);
+    box-shadow: 0 0 0 4px rgba(255, 180, 0, 0.2);
+}
+
+button {
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 999px;
+    padding: 0.75rem 1.75rem;
+    cursor: pointer;
+    border: none;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+button.primary {
+    background: linear-gradient(135deg, var(--flag-green), var(--flag-blue));
+    color: white;
+    box-shadow: 0 15px 30px rgba(0, 59, 111, 0.25);
+}
+
+button.secondary {
+    background: white;
+    color: var(--flag-blue);
+    border: 2px solid var(--flag-blue);
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 35px rgba(0, 59, 111, 0.2);
+}
+
+.game {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.scoreboard {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    background: linear-gradient(135deg, rgba(0, 122, 77, 0.85), rgba(0, 59, 111, 0.85));
+    color: white;
+}
+
+#score-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.75rem;
+}
+
+.score {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 0.75rem;
+    font-size: 1.05rem;
+}
+
+.card {
+    display: grid;
+    gap: 1rem;
+    background: var(--card);
+    position: relative;
+}
+
+.card header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.card h2 {
+    margin: 0;
+    font-size: 1.65rem;
+}
+
+.description {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+}
+
+.options {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.option-button {
+    padding: 0.85rem 1rem;
+    border-radius: 1rem;
+    background: rgba(0, 122, 77, 0.08);
+    border: 2px solid transparent;
+    text-align: left;
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    font-size: 1rem;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.option-button span {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background: rgba(255, 180, 0, 0.18);
+    color: var(--flag-black);
+    font-weight: 700;
+}
+
+.option-button.correct {
+    border-color: var(--flag-green);
+    background: rgba(0, 122, 77, 0.2);
+    color: var(--flag-black);
+}
+
+.option-button.incorrect {
+    border-color: var(--flag-red);
+    background: rgba(222, 31, 38, 0.12);
+}
+
+.card__footer {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.fact {
+    margin: 0;
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.7);
+    border-left: 4px solid var(--flag-gold);
+    border-radius: 0.5rem;
+    color: var(--flag-black);
+    line-height: 1.5;
+}
+
+.tips ul {
+    padding-left: 1.25rem;
+    margin: 0;
+    line-height: 1.6;
+}
+
+.footer {
+    padding: 1.5rem;
+    text-align: center;
+    font-size: 0.9rem;
+    color: var(--muted);
+}
+
+@media (min-width: 768px) {
+    .game {
+        grid-template-columns: 1fr 2fr;
+        align-items: start;
+    }
+}

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Salaam &amp; Sunshine Mind Game</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <header class="banner">
+        <div class="banner__overlay"></div>
+        <div class="banner__content">
+            <h1>Salaam &amp; Sunshine</h1>
+            <p class="tagline">A South African Islamic mind game for two hearts online</p>
+        </div>
+    </header>
+
+    <main>
+        <section class="intro">
+            <p>
+                Gather your favourite person, say <em>as-salaamu alaykum</em>, and take turns celebrating
+                the colours of Mzansi alongside timeless Islamic wisdom. Answer questions, share stories,
+                and earn points on your digital date night.
+            </p>
+        </section>
+
+        <section class="setup">
+            <h2>Set the vibe</h2>
+            <form id="setup-form">
+                <label for="player-one">Player one</label>
+                <input id="player-one" type="text" placeholder="e.g. Amina" required />
+
+                <label for="player-two">Player two</label>
+                <input id="player-two" type="text" placeholder="e.g. Yusuf" required />
+
+                <label for="round-count">Rounds</label>
+                <select id="round-count">
+                    <option value="6">6</option>
+                    <option value="8">8</option>
+                    <option value="10" selected>10</option>
+                </select>
+
+                <button type="submit" class="primary">Start game</button>
+            </form>
+        </section>
+
+        <section class="game" aria-live="polite">
+            <div class="scoreboard" id="scoreboard">
+                <h2>Scoreboard</h2>
+                <ul id="score-list"></ul>
+            </div>
+
+            <article class="card" id="card" hidden>
+                <header>
+                    <p class="round" id="round-display"></p>
+                    <p class="turn" id="turn-display"></p>
+                </header>
+                <h2 id="prompt"></h2>
+                <p id="description" class="description"></p>
+
+                <div id="options" class="options"></div>
+
+                <footer class="card__footer">
+                    <p id="fact" class="fact" hidden></p>
+                    <button id="next-button" class="secondary" hidden>Next round</button>
+                </footer>
+            </article>
+        </section>
+
+        <section class="tips">
+            <h2>Date night boosters</h2>
+            <ul>
+                <li>Play over a video call, light some virtual rooibos candles, and keep the chat flowing.</li>
+                <li>Whenever you see a conversation prompt, pause to share stories before awarding points.</li>
+                <li>Celebrate wins with a joyful <em>takbeer</em> (Allahu akbar!) and share a du'a for each other.</li>
+            </ul>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>Made with Cape Town sunshine, Durban spice, and lots of salaams.</p>
+    </footer>
+
+    <script src="script.js" type="module"></script>
+</body>
+</html>
