@@ -1,292 +1,35 @@
-//# Gomoku-Game
-#include <iostream>
-using namespace std;
+# Salaam & Sunshine Mind Game
 
-bool win (bool winner, int board[][15], int X, int Y, int player, int counter)
-{
-    // 0     we checking for the ones on the sides verticals
+A cosy two-player web experience to celebrate South African Muslim culture while you catch up online. Share salaams, answer trivia, and reflect together through playful prompts.
 
-    counter=1;
-    for (int j=1; j<5; j++)
-    {
+## Downloading the files
 
-        if (board[X-j][Y]==player)
-        {
-            counter++;
-            if (board[X+j][Y]==player)
-            {
-                counter++;
-            }
-        }
+All of the assets live at the top level of the project. If you're on GitHub, you can choose either of these options to get them onto your computer:
 
-        if (counter ==5)
-        {
-            winner = true;
-            cout<< "Player: "<< player<<"   is winner"<<endl;
+- **Download ZIP** – Click the green **Code** button, choose **Download ZIP**, unzip the folder, and you'll see `index.html`, `style.css`, and `script.js` in the root.
+- **Clone with Git** – Run `git clone <repository-url>`, `cd` into the folder, and the same files will be waiting in the project root.
 
-        }
-    }
+Once the files are on your machine, double-click `index.html` (or drag it into a browser tab) to launch the experience—no build step or server required.
 
-    counter=1;
-    for (int j=1; j<5; j++)
-    {
-        // 1     we checking for the ones on the sides horizontal
-        if (board[X][Y-j]==player)
-        {
+## Quick start
 
-            counter++;
-            if (board[X][Y+j]==player)
-            {
-                counter++;
-            }
-        }
+1. Open `index.html` in your favourite browser. It's in the root of the folder you just downloaded.
+2. Enter each player's name, choose how many rounds you'd like to play, and press **Start game**.
+3. Take turns answering multiple-choice questions or completing reflective prompts.
+4. Award yourselves points, read the cultural facts, and celebrate the winner (or the blessed tie!).
 
-        if (counter ==5)
-        {
-            winner = true;
-            cout<< "Player: "<< player<<"   is winner"<<endl;
+## Game highlights
 
-        }
+- **South African flavour** – Stories from Cape Town's Bo-Kaap to Durban's halaal bunny chows.
+- **Islamic inspiration** – Prompts rooted in salaam, du'a, and sunnah-based kindness.
+- **Made for couples** – Perfect for long-distance date nights or playful evenings at home.
 
-    }
+## Tech stack
 
-    counter=1;
-    for (int j=1; j<5; j++)
-    {
-        //2      we checking for the ones on the sides diagonal 1
-        if (board[X+j][Y+j]==player)
-        {
+This is a lightweight front-end project using:
 
-            counter++;
-            if (board[X-j][Y-j]==player)
-            {
-                counter++;
-            }
-        }
+- Semantic HTML
+- Modern CSS with responsive design
+- Vanilla JavaScript for game logic
 
-        if (counter ==5)
-        {
-            winner = true;
-            cout<< "Player: "<< player<<"   is winner"<<endl;
-
-        }
-
-    }
-
-    counter=1;
-    for (int j=1; j<5; j++)
-    {
-        //3       we checking for the ones on the sides diagonal 2
-        if (board[X-j][Y-j]==player)
-        {
-
-            counter++;
-            if (board[X+j][Y+j]==player)
-            {
-                counter++;
-            }
-        }
-
-        if (counter ==5)
-        {
-            winner = true;
-            cout<< "Player: "<< player<<"   is winner"<<endl;
-
-        }
-
-    }
-}
-
-
-
-void showBoared(int boardS,int vBoard[][15])
-{
-    cout<<"  ";
-    for (int i=0; i<boardS; i++)
-    {
-        cout<<i<<" ";
-    }
-    cout<<endl;
-
-    for (int i=0; i<boardS; i++)
-    {
-        cout<<i<<"|";
-        int j;
-        for (j=0; j<boardS; j++)
-        {
-            cout<<vBoard[i][j]<<" ";
-        }
-        cout<<endl;
-    }
-}
-void posReq(int X,int Y,int board[][15],int player);
-
-int main()
-
-{
-
-    int lines;
-
-    cout <<"Enter the game size: "<<endl;
-    cin >>lines;
-    int board[lines][15];
-
-    for (int i=0; i<lines; i++)
-    {
-        for (int j=0; j<lines; j++)
-        {
-
-            board[i][j]=0;
-
-
-        }
-
-
-    }
-    showBoared(lines, board);
-    bool winner =false;
-    int player;
-    int counter;
-
-    int X, Y;
-
-// the function where player one 1 is playing
-    while (winner == false)
-    {
-        player = 1;
-
-        posReq(X,Y,board,player);
-        showBoared(lines, board);
-        counter=1;
-        win(winner,board,X,Y,player, counter);
-
-
-        // the function where player two 2 is playing
-
-
-        player = 2;
-
-        posReq(X,Y,board,player);
-        showBoared(lines, board);
-        counter=1;
-        win(winner,board,X, Y,player, counter);
-
-    }
-}
-
-
-void posReq(int X,int Y,int board[][15],int player)
-{
-    bool validPosition=false;
-
-        cout <<"player: "<<player<<"Please play, it is your turn"<<endl;
-        cin>>X>>Y;
-        if (board[X][Y]==0)
-        {
-            board[X][Y]=player;
-            validPosition=true;
-        }
-
-        else
-        {
-            while (validPosition==false)
-            {
-                cout<<"Please play again, this position is occupied " ;
-                cin>>X>>Y;
-                if (board[X][Y]==0)
-                {
-                    board[X][Y]=player;
-                    validPosition=true;
-                }
-            }
-        }
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Feel free to extend the question deck or theme to suit your own love story.
