@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Kindred Voice — AI-assisted community email tool</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #0b0f17;
+        --bg-alt: #0f1623;
+        --bg-soft: #121a2a;
+        --text: #e7edf7;
+        --muted: #9aa7bd;
+        --accent: #ff9a3c;
+        --accent-soft: rgba(255, 154, 60, 0.18);
+        --card: rgba(255, 255, 255, 0.04);
+        --border: rgba(255, 255, 255, 0.08);
+        --glow: 0 0 40px rgba(255, 154, 60, 0.35);
+        --max-width: 1120px;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Inter", system-ui, -apple-system, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.6;
+        transition: background 0.8s ease;
+      }
+
+      .page {
+        overflow-x: hidden;
+      }
+
+      .container {
+        width: min(92vw, var(--max-width));
+        margin: 0 auto;
+      }
+
+      header {
+        position: fixed;
+        top: 0;
+        width: 100%;
+        z-index: 5;
+        backdrop-filter: blur(18px);
+        background: rgba(6, 10, 16, 0.6);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 0;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+      }
+
+      .logo-badge {
+        width: 36px;
+        height: 36px;
+        border-radius: 12px;
+        background: radial-gradient(circle at 30% 30%, #ffb463, #ff7b22);
+        box-shadow: var(--glow);
+      }
+
+      .nav-actions {
+        display: flex;
+        gap: 16px;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 22px;
+        border-radius: 999px;
+        border: 1px solid transparent;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.25s ease;
+        cursor: pointer;
+        color: var(--text);
+      }
+
+      .btn-primary {
+        background: linear-gradient(120deg, #ffb463, #ff7b22);
+        color: #1b1208;
+        box-shadow: var(--glow);
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 0 60px rgba(255, 154, 60, 0.5);
+      }
+
+      .btn-ghost {
+        border-color: rgba(255, 255, 255, 0.16);
+        background: transparent;
+      }
+
+      .btn-ghost:hover {
+        border-color: rgba(255, 255, 255, 0.3);
+      }
+
+      section {
+        padding: 120px 0;
+      }
+
+      .hero {
+        min-height: 100vh;
+        display: grid;
+        align-items: center;
+        padding-top: 140px;
+      }
+
+      .hero-content {
+        display: grid;
+        gap: 28px;
+      }
+
+      .eyebrow {
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      h1 {
+        font-size: clamp(2.8rem, 5vw, 4.2rem);
+        line-height: 1.1;
+      }
+
+      .hero p {
+        font-size: 1.1rem;
+        max-width: 560px;
+        color: var(--muted);
+      }
+
+      .cta-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+      }
+
+      .hero-card {
+        margin-top: 40px;
+        padding: 30px;
+        border-radius: 24px;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), transparent);
+        border: 1px solid var(--border);
+        display: grid;
+        gap: 18px;
+      }
+
+      .hero-card h3 {
+        font-size: 1.1rem;
+      }
+
+      .pill-row {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      .pill {
+        padding: 8px 14px;
+        border-radius: 999px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+
+      .section-title {
+        font-size: clamp(2rem, 3.8vw, 3rem);
+        margin-bottom: 20px;
+      }
+
+      .section-subtitle {
+        max-width: 620px;
+        color: var(--muted);
+        margin-bottom: 40px;
+      }
+
+      .grid {
+        display: grid;
+        gap: 24px;
+      }
+
+      .grid-2 {
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      }
+
+      .grid-3 {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      }
+
+      .card {
+        padding: 26px;
+        border-radius: 20px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+      }
+
+      .card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 16px 30px rgba(0, 0, 0, 0.35);
+      }
+
+      .card h4 {
+        margin-bottom: 10px;
+      }
+
+      .flow {
+        display: grid;
+        gap: 20px;
+      }
+
+      .flow-step {
+        display: grid;
+        gap: 10px;
+        padding: 20px;
+        border-left: 2px solid var(--accent);
+        background: rgba(255, 154, 60, 0.05);
+        border-radius: 16px;
+      }
+
+      .metrics {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 30px;
+      }
+
+      .metric {
+        flex: 1 1 220px;
+        padding: 24px;
+        border-radius: 20px;
+        background: var(--card);
+        border: 1px solid var(--border);
+      }
+
+      .metric-value {
+        font-size: 2.6rem;
+        font-weight: 600;
+      }
+
+      .metric-label {
+        color: var(--muted);
+      }
+
+      .who-card {
+        display: grid;
+        gap: 12px;
+        justify-items: start;
+      }
+
+      .who-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 14px;
+        background: rgba(255, 154, 60, 0.16);
+        display: grid;
+        place-items: center;
+        font-size: 1.4rem;
+      }
+
+      .demo-panel {
+        display: grid;
+        gap: 20px;
+        padding: 32px;
+        border-radius: 28px;
+        background: linear-gradient(140deg, rgba(255, 255, 255, 0.08), transparent);
+        border: 1px solid var(--border);
+      }
+
+      .conversion {
+        display: grid;
+        gap: 18px;
+        padding: 36px;
+        border-radius: 24px;
+        background: var(--bg-soft);
+        border: 1px solid var(--border);
+      }
+
+      .input-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      input[type="email"] {
+        flex: 1 1 260px;
+        padding: 14px 18px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(0, 0, 0, 0.3);
+        color: var(--text);
+      }
+
+      footer {
+        padding: 60px 0 40px;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      .modal {
+        position: fixed;
+        inset: 0;
+        background: rgba(5, 8, 14, 0.8);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+        padding: 24px;
+      }
+
+      .modal.open {
+        display: flex;
+      }
+
+      .modal-content {
+        width: min(900px, 96vw);
+        background: #0c111b;
+        border-radius: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        overflow: hidden;
+        position: relative;
+      }
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 24px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      }
+
+      .modal-close {
+        background: transparent;
+        border: none;
+        color: var(--muted);
+        font-size: 1.2rem;
+        cursor: pointer;
+      }
+
+      .modal-body {
+        padding: 0;
+        height: 520px;
+      }
+
+      .modal-body iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+      }
+
+      .reveal {
+        opacity: 0;
+        transform: translateY(24px);
+        transition: all 0.7s ease;
+      }
+
+      .reveal.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      @media (max-width: 860px) {
+        .nav-actions {
+          display: none;
+        }
+        .hero {
+          padding-top: 160px;
+        }
+      }
+
+      @media (max-width: 640px) {
+        section {
+          padding: 90px 0;
+        }
+        h1 {
+          font-size: 2.4rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <header>
+        <div class="container nav">
+          <div class="logo">
+            <span class="logo-badge"></span>
+            Kindred Voice
+          </div>
+          <div class="nav-actions">
+            <button class="btn btn-ghost" data-open-modal="demo">See live demo</button>
+            <button class="btn btn-primary" data-open-modal="signup">Start free</button>
+          </div>
+        </div>
+      </header>
+
+      <main>
+        <section class="hero" data-bg="#0b0f17">
+          <div class="container hero-content">
+            <span class="eyebrow">AI-assisted community support</span>
+            <h1>Make community support clear, warm, and effortless.</h1>
+            <p>
+              Kindred Voice helps people write respectful, thoughtful emails for community initiatives in
+              under 30 seconds. The AI guides — you stay in control.
+            </p>
+            <div class="cta-group">
+              <button class="btn btn-primary" data-open-modal="demo">See live demo</button>
+              <button class="btn btn-ghost" data-open-modal="signup">Start free</button>
+            </div>
+            <div class="hero-card reveal" data-reveal>
+              <h3>Turn intent into action with confidence.</h3>
+              <div class="pill-row">
+                <span class="pill">Guided prompts</span>
+                <span class="pill">Human review</span>
+                <span class="pill">Neutral language</span>
+                <span class="pill">30-second flow</span>
+              </div>
+              <p class="section-subtitle">
+                Designed for councils, universities, and NGOs who want calm, clear participation without
+                political framing.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section data-bg="#0f1623">
+          <div class="container">
+            <h2 class="section-title reveal" data-reveal>People care, but the blank page stops them.</h2>
+            <p class="section-subtitle reveal" data-reveal>
+              Writing the “right” message takes time. People worry about tone, clarity, or getting the facts
+              right, so participation fades even when support is strong.
+            </p>
+            <div class="grid grid-3">
+              <div class="card reveal" data-reveal>
+                <h4>Friction at the first sentence</h4>
+                <p class="section-subtitle">
+                  Most supporters never send a message because getting started feels daunting.
+                </p>
+              </div>
+              <div class="card reveal" data-reveal>
+                <h4>Uncertain tone</h4>
+                <p class="section-subtitle">
+                  People want to sound respectful and constructive, not reactive.
+                </p>
+              </div>
+              <div class="card reveal" data-reveal>
+                <h4>Good intent, low action</h4>
+                <p class="section-subtitle">
+                  Community initiatives lose momentum when support isn’t expressed clearly.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section data-bg="#111a2c">
+          <div class="container">
+            <h2 class="section-title reveal" data-reveal>An AI guide that keeps humans in charge.</h2>
+            <p class="section-subtitle reveal" data-reveal>
+              The tool gently guides people through a simple flow. It suggests language, never replaces the
+              user’s intent.
+            </p>
+            <div class="grid grid-2">
+              <div class="flow reveal" data-reveal>
+                <div class="flow-step">
+                  <strong>1. Name & email</strong>
+                  <span class="section-subtitle">Auto-fill makes it effortless to start.</span>
+                </div>
+                <div class="flow-step">
+                  <strong>2. Optional tone & length</strong>
+                  <span class="section-subtitle">Users choose calm, concise, or detailed.</span>
+                </div>
+                <div class="flow-step">
+                  <strong>3. Review & send</strong>
+                  <span class="section-subtitle">Final copy is editable and always human-approved.</span>
+                </div>
+              </div>
+              <div class="demo-panel reveal" data-reveal>
+                <h3>Guided by clarity, grounded in respect.</h3>
+                <p class="section-subtitle">
+                  Every draft is built around community impact, inclusivity, and constructive language.
+                </p>
+                <div class="pill-row">
+                  <span class="pill">Smart tone control</span>
+                  <span class="pill">Instant personalization</span>
+                  <span class="pill">Policy-neutral</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section data-bg="#0e141f">
+          <div class="container">
+            <h2 class="section-title reveal" data-reveal>Clear participation at community scale.</h2>
+            <p class="section-subtitle reveal" data-reveal>
+              When people can express support quickly and thoughtfully, initiatives gain visible momentum.
+            </p>
+            <div class="metrics">
+              <div class="metric reveal" data-reveal>
+                <div class="metric-value" data-count="18420">0</div>
+                <div class="metric-label">Support emails drafted in the last 60 days</div>
+              </div>
+              <div class="metric reveal" data-reveal>
+                <div class="metric-value" data-count="92">0</div>
+                <div class="metric-label">% of users who send after drafting</div>
+              </div>
+              <div class="metric reveal" data-reveal>
+                <div class="metric-value" data-count="34">0</div>
+                <div class="metric-label">Average seconds from start to send</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section data-bg="#121a2a">
+          <div class="container">
+            <h2 class="section-title reveal" data-reveal>Built for trusted community partners.</h2>
+            <p class="section-subtitle reveal" data-reveal>
+              Designed to align with civic values and institutional standards.
+            </p>
+            <div class="grid grid-2">
+              <div class="card who-card reveal" data-reveal>
+                <div class="who-icon">🏛️</div>
+                <h4>Local councils</h4>
+                <p class="section-subtitle">Encourage constructive feedback on community initiatives.</p>
+              </div>
+              <div class="card who-card reveal" data-reveal>
+                <div class="who-icon">🤝</div>
+                <h4>NGOs & foundations</h4>
+                <p class="section-subtitle">Mobilise supporters without heavy campaigning.</p>
+              </div>
+              <div class="card who-card reveal" data-reveal>
+                <div class="who-icon">🎓</div>
+                <h4>Universities</h4>
+                <p class="section-subtitle">Turn student engagement into respectful advocacy.</p>
+              </div>
+              <div class="card who-card reveal" data-reveal>
+                <div class="who-icon">🌿</div>
+                <h4>Community organisations</h4>
+                <p class="section-subtitle">Give members a clear voice on local projects.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section data-bg="#0f1623">
+          <div class="container">
+            <h2 class="section-title reveal" data-reveal>See the live demo.</h2>
+            <p class="section-subtitle reveal" data-reveal>
+              Launch the interactive experience without leaving the page.
+            </p>
+            <div class="demo-panel reveal" data-reveal>
+              <h3>Experience the 30-second flow.</h3>
+              <p class="section-subtitle">
+                Replace the placeholder with your demo URL in the code.
+              </p>
+              <button class="btn btn-primary" data-open-modal="demo">Open demo</button>
+            </div>
+          </div>
+        </section>
+
+        <section data-bg="#111a2c">
+          <div class="container">
+            <h2 class="section-title reveal" data-reveal>Invite people to take action now.</h2>
+            <p class="section-subtitle reveal" data-reveal>
+              Capture emails or offer a guided demo for teams evaluating the experience.
+            </p>
+            <div class="conversion reveal" data-reveal>
+              <strong>Get early access</strong>
+              <p class="section-subtitle">
+                Add your email or book a short walkthrough. Integrations can be swapped in later.
+              </p>
+              <div class="input-row">
+                <input type="email" placeholder="Email address" />
+                <button class="btn btn-primary">Try it free</button>
+              </div>
+              <button class="btn btn-ghost" data-open-modal="calendly">Book a demo</button>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer>
+        <div class="container">
+          <div class="logo">
+            <span class="logo-badge"></span>
+            Kindred Voice
+          </div>
+          <p>AI-assisted community engagement, designed to keep people heard and supported.</p>
+        </div>
+      </footer>
+    </div>
+
+    <div class="modal" data-modal="demo" aria-hidden="true">
+      <div class="modal-content">
+        <div class="modal-header">
+          <strong>Live demo</strong>
+          <button class="modal-close" data-close-modal>&times;</button>
+        </div>
+        <div class="modal-body">
+          <iframe
+            title="Demo"
+            src="https://example.com/demo-embed"
+            data-placeholder="Replace with demo iframe URL"
+          ></iframe>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal" data-modal="calendly" aria-hidden="true">
+      <div class="modal-content">
+        <div class="modal-header">
+          <strong>Book a demo</strong>
+          <button class="modal-close" data-close-modal>&times;</button>
+        </div>
+        <div class="modal-body">
+          <iframe
+            title="Calendly"
+            src="https://calendly.com/your-link"
+            data-placeholder="Replace with Calendly link"
+          ></iframe>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal" data-modal="signup" aria-hidden="true">
+      <div class="modal-content">
+        <div class="modal-header">
+          <strong>Start free</strong>
+          <button class="modal-close" data-close-modal>&times;</button>
+        </div>
+        <div class="modal-body">
+          <iframe
+            title="Signup"
+            src="https://example.com/signup"
+            data-placeholder="Replace with signup URL"
+          ></iframe>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const revealItems = document.querySelectorAll("[data-reveal]");
+      const counterItems = document.querySelectorAll("[data-count]");
+      const sections = Array.from(document.querySelectorAll("section"));
+
+      const revealObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("show");
+              revealObserver.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.2 }
+      );
+
+      revealItems.forEach((item) => {
+        item.classList.add("reveal");
+        revealObserver.observe(item);
+      });
+
+      const countObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            const target = entry.target;
+            const finalValue = Number(target.dataset.count);
+            const duration = 1400;
+            const start = performance.now();
+
+            const animate = (now) => {
+              const progress = Math.min((now - start) / duration, 1);
+              const value = Math.floor(finalValue * progress);
+              target.textContent = value.toLocaleString();
+              if (progress < 1) requestAnimationFrame(animate);
+            };
+
+            requestAnimationFrame(animate);
+            countObserver.unobserve(target);
+          });
+        },
+        { threshold: 0.6 }
+      );
+
+      counterItems.forEach((item) => countObserver.observe(item));
+
+      const setBackgroundFromScroll = () => {
+        const midpoint = window.scrollY + window.innerHeight / 2;
+        const current = sections.find((section) => {
+          const rect = section.getBoundingClientRect();
+          const top = rect.top + window.scrollY;
+          const bottom = top + section.offsetHeight;
+          return midpoint >= top && midpoint <= bottom;
+        });
+
+        if (current) {
+          document.body.style.background = current.dataset.bg;
+        }
+      };
+
+      window.addEventListener("scroll", setBackgroundFromScroll);
+      window.addEventListener("load", setBackgroundFromScroll);
+
+      const openModal = (name) => {
+        const modal = document.querySelector(`[data-modal="${name}"]`);
+        if (!modal) return;
+        modal.classList.add("open");
+        modal.setAttribute("aria-hidden", "false");
+      };
+
+      const closeModal = (modal) => {
+        modal.classList.remove("open");
+        modal.setAttribute("aria-hidden", "true");
+      };
+
+      document.querySelectorAll("[data-open-modal]").forEach((button) => {
+        button.addEventListener("click", () => openModal(button.dataset.openModal));
+      });
+
+      document.querySelectorAll("[data-close-modal]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const modal = button.closest(".modal");
+          if (modal) closeModal(modal);
+        });
+      });
+
+      document.querySelectorAll(".modal").forEach((modal) => {
+        modal.addEventListener("click", (event) => {
+          if (event.target === modal) closeModal(modal);
+        });
+      });
+    </script>
+  </body>
+</html>
