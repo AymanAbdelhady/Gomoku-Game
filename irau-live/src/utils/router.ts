@@ -34,3 +34,10 @@ export function absoluteRoute(to: Route): string {
   const { origin, pathname } = window.location;
   return `${origin}${pathname}#${to}`;
 }
+
+/** Query parameters after the hash route, e.g. `#/give?code=4821`. */
+export function hashQuery(): URLSearchParams {
+  const hash = window.location.hash;
+  const i = hash.indexOf('?');
+  return new URLSearchParams(i >= 0 ? hash.slice(i + 1) : '');
+}

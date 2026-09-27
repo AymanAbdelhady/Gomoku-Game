@@ -11,7 +11,10 @@ import { getTotals, qrTarget } from '../state/selectors';
 import { normaliseState } from '../state/store/persistence';
 import { REGIONS, regionLabel } from '../config/locations';
 import { BRAND, PLACEHOLDER, SLIDE_LABELS, SLIDE_ORDER } from '../config/campaign';
-import { createEvent } from '../config/defaults';
+import { createEvent, pledgeCode } from '../config/defaults';
+import { useStore } from '../state/StoreContext';
+import { useGuestLink } from '../state/useGuestLink';
+import type { DonorAccount } from '../types';
 import { isPlaceholder, publicDonorName } from '../utils/content';
 import { money } from '../utils/format';
 import { uid } from '../utils/id';
@@ -23,6 +26,8 @@ const SECTIONS = [
   ['event', 'Event details'],
   ['locations', 'Cities & events'],
   ['fundraising', 'Target & totals'],
+  ['pledging', 'Phone pledging'],
+  ['pledgers', 'Pledgers (private)'],
   ['donate', 'Donation link & QR'],
   ['levels', 'Giving levels'],
   ['milestones', 'Milestones'],
@@ -30,7 +35,7 @@ const SECTIONS = [
   ['slides', 'Live slides'],
   ['display', 'Display options'],
   ['brand', 'Brand colours'],
-  ['data', 'Donations & data'],
+  ['data', 'Pledges & data'],
 ] as const;
 
 export function Settings() {
@@ -90,7 +95,7 @@ export function Settings() {
               <TextSetting label="Event date" type="date" value={event.date} onCommit={(date) => update({ date })} />
               <TextSetting className="md:col-span-2" label="Supporting line" value={event.tagline} onCommit={(tagline) => update({ tagline })} />
               <TextSetting className="md:col-span-2" multiline label="Event description" value={event.description} onCommit={(description) => update({ description })} hint="Internal summary of the campaign focus." />
-              <TextSetting className="md:col-span-2" multiline label="Campaign statement" value={event.campaignStatement} onCommit={(campaignStatement) => update({ campaignStatement })} hint="Shown on the impact slide and donor page." />
+              <TextSetting className="md:col-span-2" multiline label="Campaign statement" value={event.campaignStatement} onCommit={(campaignStatement) => update({ campaignStatement })} hint="Shown on the impact slide and guest page." />
               <TextSetting className="md:col-span-2" label="Partner line" value={event.partnerLine} onCommit={(partnerLine) => update({ partnerLine })} />
             </div>
           </Section>
@@ -105,13 +110,16 @@ export function Settings() {
                 allowZero
                 value={getTotals(event).raised}
                 onCommit={(raised) => dispatch({ type: 'event/setRaised', eventId: event.id, raised })}
-                hint="Corrects the total (e.g. to include pre-event or online gifts). Doesn’t trigger celebrations."
+                hint="Corrects the total (e.g. to include pre-event pledges or online gifts). Doesn’t trigger celebrations."
               />
-              <NumberSetting label="Donors before tonight" value={event.openingDonorCount} onCommit={(openingDonorCount) => update({ openingDonorCount })} hint="Added to the donor count." />
+              <NumberSetting label="Pledges before tonight" value={event.openingDonorCount} onCommit={(openingDonorCount) => update({ openingDonorCount })} hint="Added to the pledge count." />
             </div>
           </Section>
 
-          <Section id="donate" title="Donation link & QR code" description="Used by the QR slide, the corner QR and the donor page’s “Donate now” button.">
+          <PledgingSection event={event} />
+          <PledgersSection event={event} />
+
+          <Section id="donate" title="Donation link & QR code" description="Where guests complete their pledges (the “Complete my pledge” and “Donate” buttons).">
             <div className="grid gap-6 md:grid-cols-[1fr_auto]">
               <div className="space-y-5">
                 <TextSetting
@@ -119,7 +127,7 @@ export function Settings() {
                   type="url"
                   value={event.donationUrl}
                   onCommit={(donationUrl) => update({ donationUrl: donationUrl.trim() })}
-                  hint={<>The official donation page. Optional tokens <code>{'{amount}'}</code> and <code>{'{frequency}'}</code> are filled in from the donor page if your platform supports pre-filled amounts.</>}
+                  hint={<>The official donation page. Optional tokens <code>{'{amount}'}</code> and <code>{'{frequency}'}</code> are filled in from the guest page if your platform supports pre-filled amounts.</>}
                 />
                 <TextSetting label="QR code URL (optional)" type="url" value={event.qrUrl} placeholder="Leave blank to use the donation URL" onCommit={(qrUrl) => update({ qrUrl: qrUrl.trim() })} hint="e.g. a campaign link with tracking, or this app’s /#/give page when hosted publicly." />
                 <TextSetting label="Label under the QR code" value={event.qrLabel} onCommit={(qrLabel) => update({ qrLabel })} />
@@ -143,22 +151,22 @@ export function Settings() {
 
           <Section id="display" title="Display options">
             <div className="grid gap-6 md:grid-cols-2">
-              <Toggle checked={event.display.showAmounts} onChange={(v) => update({ display: { ...event.display, showAmounts: v } })} label="Show gift amounts" description="In the recent giving feed and donor wall." />
-              <Toggle checked={event.display.showImpactOnGift} onChange={(v) => update({ display: { ...event.display, showImpactOnGift: v } })} label="Show impact line with new gifts" description="Only confirmed statements are shown." />
+              <Toggle checked={event.display.showAmounts} onChange={(v) => update({ display: { ...event.display, showAmounts: v } })} label="Show pledge amounts" description="In the recent pledges feed and pledge wall." />
+              <Toggle checked={event.display.showImpactOnGift} onChange={(v) => update({ display: { ...event.display, showImpactOnGift: v } })} label="Show impact line with new pledges" description="Only confirmed statements are shown." />
               <Toggle checked={event.display.cornerQr} onChange={(v) => update({ display: { ...event.display, cornerQr: v } })} label="QR code on the main screen" />
               <div className="md:col-span-2">
-                <p className="mb-1.5 text-[15px] font-semibold text-slate-800">Gift celebrations</p>
-                <p className="mb-2 text-[13px] text-slate-500">Light that travels from each new gift into the bar, bursts of stars, and golden fireworks for major gifts. Bigger gifts get bigger moments.</p>
+                <p className="mb-1.5 text-[15px] font-semibold text-slate-800">Pledge celebrations</p>
+                <p className="mb-2 text-[13px] text-slate-500">Light that travels from each new pledge into the bar, bursts of stars, and golden fireworks for major pledges. Bigger pledges get bigger moments.</p>
                 <Segmented<CelebrationLevel>
-                  label="Gift celebrations"
+                  label="Pledge celebrations"
                   value={event.display.celebration}
                   onChange={(celebration) => update({ display: { ...event.display, celebration } })}
                   options={[{ value: 'subtle', label: 'Subtle' }, { value: 'standard', label: 'Standard' }, { value: 'festive', label: 'Festive' }]}
                 />
               </div>
               <Toggle checked={event.display.calmMotion} onChange={(v) => update({ display: { ...event.display, calmMotion: v } })} label="Calm motion" description="Minimal animation on the live display (also follows the device’s reduced-motion setting)." />
-              <MoneySetting label="Automatic thank-you from" allowZero value={event.display.recognitionThreshold} onCommit={(recognitionThreshold) => update({ display: { ...event.display, recognitionThreshold } })} hint="Gifts at or above this pre-tick “Thank-you on screen”. 0 turns it off." />
-              <MoneySetting label="Gold treatment from" allowZero value={event.display.goldThreshold} onCommit={(goldThreshold) => update({ display: { ...event.display, goldThreshold } })} hint="Gold is reserved for major gifts. 0 turns it off." />
+              <MoneySetting label="Automatic thank-you from" allowZero value={event.display.recognitionThreshold} onCommit={(recognitionThreshold) => update({ display: { ...event.display, recognitionThreshold } })} hint="Pledges at or above this pre-tick “Thank-you on screen”. 0 turns it off." />
+              <MoneySetting label="Gold treatment from" allowZero value={event.display.goldThreshold} onCommit={(goldThreshold) => update({ display: { ...event.display, goldThreshold } })} hint="Gold is reserved for major pledges. 0 turns it off." />
             </div>
           </Section>
 
@@ -167,7 +175,7 @@ export function Settings() {
               <ColourSetting label="Primary (Islamic Relief blue)" value={event.brand.primary} onCommit={(primary) => update({ brand: { ...event.brand, primary } })} />
               <ColourSetting label="Navy" value={event.brand.navy} onCommit={(navy) => update({ brand: { ...event.brand, navy } })} />
               <ColourSetting label="Teal" value={event.brand.teal} onCommit={(teal) => update({ brand: { ...event.brand, teal } })} />
-              <ColourSetting label="Gold (major gifts)" value={event.brand.gold} onCommit={(gold) => update({ brand: { ...event.brand, gold } })} />
+              <ColourSetting label="Gold (major pledges)" value={event.brand.gold} onCommit={(gold) => update({ brand: { ...event.brand, gold } })} />
             </div>
           </Section>
 
@@ -279,7 +287,7 @@ function ImpactSection({ event }: { event: FundraisingEvent }) {
     <Section
       id="impact"
       title="Impact statements"
-      description="Used on the impact slide, the donor page and alongside matching gifts. Only use statements confirmed by Islamic Relief Australia."
+      description="Used on the impact slide, the guest page and alongside matching pledges. Only use statements confirmed by Islamic Relief Australia."
       actions={<Button size="sm" onClick={() => set([...event.impactMessages, { id: uid('imp'), frequency: 'one-off', amount: undefined, text: PLACEHOLDER }])}><Icon name="plus" className="h-4 w-4" /> Add statement</Button>}
     >
       <div className="space-y-3">
@@ -377,7 +385,7 @@ function LocationsSection() {
   };
 
   return (
-    <Section id="locations" title="Cities & events" description="Each city has its own venue, date, target, donation link, content and donations. The live display always shows the active event.">
+    <Section id="locations" title="Cities & events" description="Each city has its own venue, date, target, donation link, content and pledges. The live display always shows the active event.">
       <ul className="divide-y divide-slate-100 rounded-2xl ring-1 ring-slate-200">
         {events.map((e) => {
           const t = getTotals(e);
@@ -476,10 +484,10 @@ function DataSection({ event }: { event: FundraisingEvent }) {
   };
 
   return (
-    <Section id="data" title="Donations & data" description="Recent donations are moderated from the dashboard’s donation feed (hide names, change recognition, remove entries).">
+    <Section id="data" title="Pledges & data" description="Pledges are moderated from the dashboard’s pledge feed (hide names, change recognition, remove entries).">
       <div className="flex flex-wrap gap-2">
         <Button onClick={exportCsv} disabled={event.donations.length === 0}>
-          <Icon name="download" className="h-4 w-4" /> Export gifts (CSV)
+          <Icon name="download" className="h-4 w-4" /> Export pledges (CSV)
         </Button>
         <Button onClick={() => download(`irau-live-config-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(state, null, 2), 'application/json')}>
           <Icon name="download" className="h-4 w-4" /> Export all settings (JSON)
@@ -489,12 +497,12 @@ function DataSection({ event }: { event: FundraisingEvent }) {
         </Button>
         <input ref={fileRef} type="file" accept="application/json" className="hidden" onChange={(e) => e.target.files?.[0] && importJson(e.target.files[0])} />
         <Button variant="danger" onClick={() => setConfirmReset(true)}>
-          <Icon name="trash" className="h-4 w-4" /> Reset tonight’s donations
+          <Icon name="trash" className="h-4 w-4" /> Reset tonight’s pledges
         </Button>
       </div>
       {message && <p role="status" className="mt-3 text-sm text-slate-600">{message}</p>}
       <p className="mt-4 text-[13px] leading-relaxed text-slate-500">
-        This system only stores a display name, amount and time for each gift. Reconcile totals against your payment platform / CRM, which remains the record of truth.
+        Pledges here are promises; each pledge stores a display name, amount and time. Pledger contact details are kept separately and only operators can see them. Reconcile totals against your payment platform / CRM, which remains the record of truth.
       </p>
       <Dialog
         open={confirmReset}
@@ -511,6 +519,140 @@ function DataSection({ event }: { event: FundraisingEvent }) {
       >
         <p className="text-slate-600">All {event.donations.length} gifts, the opening balance and celebrated milestones will be cleared for this event. Settings and content are kept.</p>
       </Dialog>
+    </Section>
+  );
+}
+
+function PledgingSection({ event }: { event: FundraisingEvent }) {
+  const dispatch = useDispatch();
+  const store = useStore();
+  const link = useGuestLink(event);
+  const p = event.pledging;
+  const set = (patch: Partial<FundraisingEvent['pledging']>) => dispatch({ type: 'event/update', eventId: event.id, patch: { pledging: { ...p, ...patch } } });
+  const detected = store.publicBaseUrl();
+  const localOnly = /^(https?:\/\/)?(localhost|127\.)/.test(link.url);
+
+  return (
+    <Section id="pledging" title="Phone pledging" description="Guests scan the QR code, join with their first name and a mobile or email, and pledge from their seat. Their pledges arrive on the big screen.">
+      <div className="grid gap-6 md:grid-cols-[1fr_auto]">
+        <div className="space-y-5">
+          <Toggle checked={p.enabled} onChange={(enabled) => set({ enabled })} label="Allow pledges from phones" description="When off, the QR code goes straight to the donation page instead." />
+          <div>
+            <p className="mb-1.5 text-sm font-semibold text-slate-700">Event code</p>
+            <div className="flex items-center gap-3">
+              <span className="tabular rounded-xl bg-slate-100 px-4 py-2.5 text-2xl font-bold tracking-[0.2em] text-navy">{p.code}</span>
+              <Button size="sm" onClick={() => set({ code: pledgeCode() })}>New code</Button>
+            </div>
+            <p className="mt-1.5 text-[13px] text-slate-500">Shown on screen and built into the QR code, so only people in the room can join. A new code doesn’t sign out guests who already joined.</p>
+          </div>
+          <div>
+            <p className="mb-1.5 text-sm font-semibold text-slate-700">Phone pledges appear on screen</p>
+            <Segmented<'auto' | 'manual'>
+              label="Approval"
+              value={p.approval}
+              onChange={(approval) => set({ approval })}
+              options={[{ value: 'auto', label: 'Instantly' }, { value: 'manual', label: 'After I approve' }]}
+            />
+            <p className="mt-1.5 text-[13px] text-slate-500">“After I approve” adds an approvals panel to the dashboard. Names are cleaned (letters only) either way, and you can hide any name from the pledge feed.</p>
+          </div>
+          <MoneySetting label="Largest pledge from a phone" value={p.maxAmount} onCommit={(maxAmount) => set({ maxAmount })} hint="Larger pledges are directed to speak with the team." />
+          <TextSetting
+            label="Address phones use (optional)"
+            type="url"
+            value={p.publicUrl}
+            placeholder={detected ?? 'https://pledge.your-domain.org/'}
+            onCommit={(publicUrl) => set({ publicUrl: publicUrl.trim() })}
+            hint={detected ? `Detected on the venue network: ${detected}. Leave blank to use it.` : 'Where this app is reachable from guests’ phones. Leave blank to use this browser’s address.'}
+          />
+          {localOnly && <p className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900">The QR code currently points to “localhost”, which phones can’t open. Run the venue sync server and open the display using the computer’s network address, or set the address above.</p>}
+        </div>
+        <div className="text-center">
+          <div className="inline-block rounded-2xl bg-white p-3 ring-1 ring-slate-200">
+            <QrCode value={link.url} size={176} />
+          </div>
+          <a href={link.url} target="_blank" rel="noreferrer" className="mt-2 flex items-center justify-center gap-1 text-sm font-semibold text-brand hover:underline">
+            Open guest page <Icon name="external" className="h-4 w-4" />
+          </a>
+        </div>
+      </div>
+    </Section>
+  );
+}
+
+function PledgersSection({ event }: { event: FundraisingEvent }) {
+  const store = useStore();
+  const [list, setList] = useState<DonorAccount[] | null>(null);
+  const [error, setError] = useState('');
+
+  const load = async () => {
+    setError('');
+    try {
+      setList((await store.listDonors()).filter((d) => d.eventId === event.id));
+    } catch {
+      setError('Could not load pledgers — unlock the dashboard with the operator passcode.');
+    }
+  };
+
+  const pledgesBy = (id: string) => event.donations.filter((d) => d.donorId === id);
+
+  const exportCsv = () => {
+    if (!list) return;
+    const rows = [['Joined', 'Name', 'Shown as', 'Mobile', 'Email', 'Pledges', 'Total pledged (AUD)', 'Consent to contact']];
+    for (const d of list) {
+      const ps = pledgesBy(d.id);
+      rows.push([new Date(d.createdAt).toISOString(), d.name, d.recognition, d.mobile, d.email, String(ps.length), String(ps.reduce((s, p) => s + p.amount, 0)), String(d.consent)]);
+    }
+    const csv = rows.map((r) => r.map((c) => `"${c.replace(/"/g, '""')}"`).join(',')).join('\n');
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `pledgers-${event.region}-${event.date || 'event'}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <Section
+      id="pledgers"
+      title="Pledgers (private)"
+      description="Guests who joined from their phones, with the contact details they gave for pledge follow-up. Only operators can see this; it is never sent to screens or phones."
+      actions={
+        <>
+          <Button size="sm" onClick={load}>{list ? 'Refresh' : 'Load pledgers'}</Button>
+          <Button size="sm" onClick={exportCsv} disabled={!list?.length}>
+            <Icon name="download" className="h-4 w-4" /> CSV
+          </Button>
+        </>
+      }
+    >
+      {error && <p className="text-sm text-red-700">{error}</p>}
+      {!list && !error && <p className="text-sm text-slate-500">{event.joinedCount} guests have joined this event. Load the list to see contact details.</p>}
+      {list && list.length === 0 && <p className="text-sm text-slate-500">No guests have joined from their phones yet.</p>}
+      {list && list.length > 0 && (
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="text-[12px] uppercase tracking-wider text-slate-500">
+              <tr>
+                <th className="py-2 pr-4 font-semibold">Name</th>
+                <th className="py-2 pr-4 font-semibold">Mobile / email</th>
+                <th className="py-2 pr-4 text-right font-semibold">Pledged</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {list.map((d) => {
+                const ps = pledgesBy(d.id);
+                return (
+                  <tr key={d.id}>
+                    <td className="py-2.5 pr-4 font-medium text-slate-900">{d.name || 'Anonymous'}{d.recognition === 'anonymous' && d.name ? ' (anonymous on screen)' : ''}</td>
+                    <td className="py-2.5 pr-4 text-slate-600">{[d.mobile, d.email].filter(Boolean).join(' · ')}</td>
+                    <td className="tabular py-2.5 pr-4 text-right font-semibold text-navy">{ps.length ? `${money(ps.reduce((s, p) => s + p.amount, 0))} (${ps.length})` : '—'}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
     </Section>
   );
 }

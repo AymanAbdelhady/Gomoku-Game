@@ -6,14 +6,14 @@ import { enabledLevels } from '../../state/selectors';
 import { SLIDE_ORDER } from '../../config/campaign';
 
 export const SHORTCUTS: [string, string][] = [
-  ['Enter', 'Add the donation'],
+  ['Enter', 'Add the pledge'],
   ['Alt + 1…8', 'Choose a preset amount'],
   ['Alt + A', 'Toggle anonymous'],
   ['Esc', 'Clear the form'],
-  ['Ctrl/⌘ + Z', 'Undo the last donation (outside text fields)'],
-  ['Alt + Shift + 1…7', 'Show slide: main, impact, levels, donors, QR, thank you, milestone'],
+  ['Ctrl/⌘ + Z', 'Undo the last pledge (outside text fields)'],
+  ['Alt + Shift + 1…7', 'Show slide: main, impact, levels, pledge wall, QR, thank you, milestone'],
   ['Alt + L', 'End the current appeal'],
-  ['Alt + P', 'Pause / resume donations'],
+  ['Alt + P', 'Pause / resume pledges'],
   ['?', 'Show these shortcuts'],
 ];
 

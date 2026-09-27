@@ -16,7 +16,7 @@ export function StageHeader({ event }: { event: FundraisingEvent }) {
       </div>
       <div className="flex items-center gap-5">
         {event.demo.running && (
-          <span className="eyebrow rounded-full px-4 py-1.5 text-[15px] text-gold ring-1 ring-gold/50">Demo mode · simulated gifts</span>
+          <span className="eyebrow rounded-full px-4 py-1.5 text-[15px] text-gold ring-1 ring-gold/50">Demo mode · simulated pledges</span>
         )}
         <span className="eyebrow flex items-center gap-3 text-[17px] text-white/70">
           <span className="anim-live-dot h-3 w-3 rounded-full bg-teal" aria-hidden="true" />

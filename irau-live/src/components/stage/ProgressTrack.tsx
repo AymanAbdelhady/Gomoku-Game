@@ -34,6 +34,7 @@ export function ProgressTrack({ raised, target, milestones, pulseKey, giftAmount
   const next = markers.find((m) => m.amount > raised);
   const gain = useGain(pct, pulseKey);
   const surging = pulseKey !== 'initial';
+  const pill = showNextMilestone && next ? { left: (next.amount / target) * 100 } : null;
 
   return (
     <div className={cn('relative w-full', className)}>
@@ -117,10 +118,12 @@ export function ProgressTrack({ raised, target, milestones, pulseKey, giftAmount
 
       {showLabels && (
         <div className="relative mt-5 h-8">
-          <span className="tabular absolute left-0 text-[22px] font-medium text-white/40">$0</span>
+          {!(pill && pill.left < 12) && <span className="tabular absolute left-0 text-[22px] font-medium text-white/40">$0</span>}
           {markers.map((m) => {
             const left = (m.amount / target) * 100;
             if (left < 5 || left > 92) return null;
+            // Make room for the countdown pill: hide plain labels right next to it.
+            if (pill && m.id !== next?.id && Math.abs(left - pill.left) < 11) return null;
             if (showNextMilestone && next && m.id === next.id) {
               // The next milestone reads as a live countdown: "$100K · $13,950 to go".
               return (

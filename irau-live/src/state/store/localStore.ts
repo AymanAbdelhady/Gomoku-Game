@@ -1,10 +1,18 @@
-import type { AppState } from '../../types/index.ts';
+import type { AppState, DonorAccount, DonorSession } from '../../types/index.ts';
+import { makeAccount, makePledge, pledgeError, toSession, validateJoin, type JoinInput, type JoinResult, type PledgeResult } from '../pledging.ts';
+import { getActiveEvent } from '../selectors.ts';
+import { uid } from '../../utils/id.ts';
 import type { Action } from '../actions.ts';
 import { reducer } from '../reducer.ts';
 import type { EventStore, SyncStatus } from './types.ts';
 import { normaliseState, safeRead, safeWrite, STORAGE_KEY } from './persistence.ts';
 
 const CHANNEL = 'irau-live:sync';
+const ACCOUNTS_KEY = 'irau-live:donor-accounts:v1';
+
+interface StoredAccount extends DonorAccount {
+  token: string;
+}
 
 /**
  * Same-browser realtime store.
@@ -85,6 +93,35 @@ export class LocalEventStore implements EventStore {
     if (ok) this.setStatus({ authorised: true });
     return ok;
   };
+
+  joinAsDonor = async (input: JoinInput): Promise<JoinResult> => {
+    const event = getActiveEvent(this.state);
+    const error = validateJoin(event, input);
+    if (error) return { ok: false, error };
+    const account = makeAccount(event, input, uid('donor'), Date.now());
+    const token = uid('tok');
+    const accounts = safeRead<StoredAccount[]>(ACCOUNTS_KEY) ?? [];
+    safeWrite(ACCOUNTS_KEY, [...accounts, { ...account, token }]);
+    this.dispatch({ type: 'donor/joined', eventId: event.id });
+    return { ok: true, session: toSession(account, token) };
+  };
+
+  submitPledge = async (session: DonorSession, amount: number, levelId?: string): Promise<PledgeResult> => {
+    const stored = (safeRead<StoredAccount[]>(ACCOUNTS_KEY) ?? []).find((a) => a.id === session.donorId && a.token === session.token);
+    const event = this.state.events[session.eventId];
+    const error = pledgeError(event, stored, amount, levelId);
+    if (error || !event || !stored) return { ok: false, error: error ?? 'Please join again.' };
+    const pledge = makePledge(event, stored, amount, uid('plg'), Date.now(), levelId);
+    this.dispatch({ type: 'pledge/submit', pledge });
+    const after = this.state.events[event.id];
+    if (after.donations.some((d) => d.id === pledge.id)) return { ok: true, status: 'approved', pledge };
+    if (after.pendingPledges.some((d) => d.id === pledge.id)) return { ok: true, status: 'pending', pledge };
+    return { ok: false, error: 'Your pledge could not be recorded. Please try again.' };
+  };
+
+  listDonors = async (): Promise<DonorAccount[]> => (safeRead<StoredAccount[]>(ACCOUNTS_KEY) ?? []).map(({ token: _t, ...a }) => a);
+
+  publicBaseUrl = () => null;
 
   private receive(incoming: AppState) {
     if (incoming.rev <= this.state.rev) return;

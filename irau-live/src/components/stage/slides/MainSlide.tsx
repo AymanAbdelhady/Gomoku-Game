@@ -4,15 +4,18 @@ import { ProgressTrack } from '../ProgressTrack';
 import { GivingFeed } from '../GivingFeed';
 import { MomentumMeter } from '../MomentumMeter';
 import { Pop } from '../Pop';
-import { GiftToast, GoldMotes } from '../GiftCelebration';
+import { GoldMotes } from '../GiftCelebration';
+import { PledgeSpotlight } from '../PledgeSpotlight';
+import { useGuestLink } from '../../../state/useGuestLink';
 import { QrCode } from '../../ui/QrCode';
-import { enabledMilestones, impactFor, qrTarget, recentDonations } from '../../../state/selectors';
+import { enabledMilestones, impactFor, recentDonations } from '../../../state/selectors';
 import { formatNumber, money, percent } from '../../../utils/format';
 import { useAnimatedNumber, useGiftWindow } from '../../../utils/hooks';
 import { cn } from '../../../utils/cn';
 
 export function MainSlide({ data }: { data: StageData }) {
-  const { event, totals, reduced, now, gift, pulseKey } = data;
+  const { event, totals, reduced, now, gift, pulseKey, waiting } = data;
+  const link = useGuestLink(event);
   const slide = event.slides.find((s) => s.id === 'main');
   const gold = !!gift && event.display.goldThreshold > 0 && gift.donation.amount >= event.display.goldThreshold;
   const freshGift = gift && now - gift.donation.timestamp < 15_000 ? gift : null;
@@ -33,7 +36,7 @@ export function MainSlide({ data }: { data: StageData }) {
         <p className="mt-6 max-w-[900px] text-[34px] leading-snug text-white/70">{slide?.subtitle || event.tagline}</p>
 
         <div className="mt-[62px]">
-          <p className="eyebrow text-[22px] text-teal">Raised tonight</p>
+          <p className="eyebrow text-[22px] text-teal">Pledged tonight</p>
           <Pop trigger={pulseKey} celebrate="total" className="relative mt-3">
             <AnimatedAmount
               value={totals.raised}
@@ -48,18 +51,18 @@ export function MainSlide({ data }: { data: StageData }) {
       </section>
 
       {/* Stats, which make way for the gift acknowledgement while it is showing */}
-      <div className={cn('absolute left-[120px] top-[800px] w-[1060px] transition-all duration-700', toastVisible ? 'translate-y-4 opacity-0' : 'opacity-100')}>
+      <div className={cn('absolute left-[120px] top-[800px] w-[1060px] transition-all', toastVisible ? 'translate-y-4 opacity-0 duration-200' : 'opacity-100 duration-700')}>
         <div className="flex items-end gap-14">
           <Stat value={percent(totals.progress)} label={exceeded ? 'Target reached' : 'Of target'} highlight={exceeded} />
           <Pop trigger={pulseKey} scale={1.12}>
-            <Stat value={formatNumber(donorsShown)} label={Math.round(donorsShown) === 1 ? 'Donor' : 'Donors'} />
+            <Stat value={formatNumber(donorsShown)} label={Math.round(donorsShown) === 1 ? 'Pledge' : 'Pledges'} />
           </Pop>
           {!exceeded && <Stat value={money(totals.remaining)} label="To go" />}
           <MomentumMeter donations={event.donations} now={now} pulseKey={pulseKey} />
         </div>
       </div>
       <div className="absolute left-[1290px] top-[190px] w-[510px]">
-        <p className="eyebrow mb-7 text-[20px] text-white/55">Recent giving</p>
+        <p className="eyebrow mb-7 text-[20px] text-white/55">Recent pledges</p>
         <GivingFeed
           donations={recentDonations(event, 8)}
           now={now}
@@ -68,21 +71,30 @@ export function MainSlide({ data }: { data: StageData }) {
           rows={event.display.cornerQr ? 4 : 6}
           reduced={reduced}
         />
-        {event.display.cornerQr && qrTarget(event) && (
+        {event.display.cornerQr && link.url && (
           <div className="mt-8 flex items-center gap-6 rounded-3xl bg-white/[0.05] p-5 ring-1 ring-white/10">
             <div className="rounded-2xl bg-white p-2.5">
-              <QrCode value={qrTarget(event)} size={128} />
+              <QrCode value={link.url} size={128} />
             </div>
             <div>
-              <p className="eyebrow text-[18px] text-teal">Scan to give</p>
-              <p className="mt-1 text-[24px] font-medium leading-snug text-white">{event.qrLabel || 'Donate now'}</p>
+              <p className="eyebrow text-[18px] text-teal">{link.pledging ? 'Scan to pledge' : 'Scan to give'}</p>
+              {link.pledging ? (
+                <>
+                  <p className="mt-1 text-[24px] font-medium text-white">
+                    Code <span className="tabular font-bold tracking-[0.12em]">{event.pledging.code}</span>
+                  </p>
+                  {event.joinedCount > 0 && <p className="mt-1 text-[18px] text-white/55">{event.joinedCount} {event.joinedCount === 1 ? 'guest' : 'guests'} joined</p>}
+                </>
+              ) : (
+                <p className="mt-1 text-[24px] font-medium leading-snug text-white">{event.qrLabel || 'Donate now'}</p>
+              )}
             </div>
           </div>
         )}
       </div>
 
       <div className="pointer-events-none absolute left-[120px] top-[798px] w-[1140px]">
-        <GiftToast gift={freshGift} impact={impact} gold={gold} visible={toastVisible} />
+        <PledgeSpotlight gift={freshGift} impact={impact} gold={gold} visible={toastVisible} waiting={waiting} />
       </div>
 
       <div className="absolute inset-x-[120px] bottom-[64px]">

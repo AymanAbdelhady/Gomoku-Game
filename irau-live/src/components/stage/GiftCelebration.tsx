@@ -1,30 +1,6 @@
 import { useMemo } from 'react';
 import type { Gift } from './stageTypes';
-import { publicDonorName } from '../../utils/content';
-import { money } from '../../utils/format';
 import { mulberry32 } from '../../utils/random';
-import { cn } from '../../utils/cn';
-
-/** A gentle "+$5,000 · Anonymous" acknowledgement that rises beside the total, with the gift's impact line. */
-export function GiftToast({ gift, impact, gold, visible }: { gift: Gift | null; impact: string; gold: boolean; visible: boolean }) {
-  if (!gift) return null;
-  return (
-    // Outer element owns visibility; the inner one owns the entrance animation
-    // (an animation's end state would otherwise override the fade-out).
-    <div aria-live="polite" className={cn('transition-all duration-700', visible ? 'opacity-100' : 'pointer-events-none -translate-y-3 opacity-0')}>
-    <div key={gift.key} className="anim-rise flex items-center gap-8">
-      <div className={cn('inline-flex shrink-0 items-center gap-5 rounded-full py-3 pl-4 pr-8 ring-1 backdrop-blur-md', gold ? 'bg-gold/15 ring-gold/40' : 'bg-white/[0.08] ring-white/15')}>
-        <span className={cn('grid h-12 w-12 place-items-center rounded-full', gold ? 'bg-gold text-ink' : 'bg-brand text-white')} aria-hidden="true">
-          <HeartIcon />
-        </span>
-        <span className={cn('tabular text-[38px] font-semibold', gold ? 'text-gold' : 'text-white')}>+{money(gift.donation.amount)}</span>
-        <span className="max-w-[380px] truncate text-[30px] text-white/70">{publicDonorName(gift.donation)}</span>
-      </div>
-      {impact && <p className="font-display text-[29px] italic leading-tight text-teal">{impact}</p>}
-    </div>
-    </div>
-  );
-}
 
 /** Soft golden light rising behind the total for major gifts. Decorative; hidden with reduced motion. */
 export function GoldMotes({ gift }: { gift: Gift | null }) {

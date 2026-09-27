@@ -27,7 +27,7 @@ export function DemoPanel() {
       actions={running ? <span className="rounded-full bg-gold/20 px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-[#7a5d1f]">Running</span> : null}
     >
       <p className="text-sm leading-relaxed text-slate-600">
-        Simulated gifts arrive every few seconds so you can present the platform without a payment system. Demo gifts are labelled and can be cleared in one click.
+        Simulated pledges arrive every few seconds so you can present the platform without a payment system. Demo pledges are labelled and can be cleared in one click.
         {!store.runsDemoLocally && ' The venue sync server runs the demo clock.'}
       </p>
       <div className="mt-4 grid grid-cols-2 gap-2">
@@ -47,10 +47,10 @@ export function DemoPanel() {
           checked={autoStage}
           onChange={(v) => dispatch({ type: 'demo/configure', eventId: event.id, autoStage: v })}
           label="Also run the stage"
-          description="Plays appeals, impact, QR and donor slides automatically."
+          description="Plays appeals, impact, QR and pledge-wall slides automatically."
         />
         <Button size="sm" variant="danger" disabled={demoCount === 0} onClick={() => dispatch({ type: 'demo/clear', eventId: event.id })}>
-          <Icon name="trash" className="h-4 w-4" /> Clear {demoCount || ''} demo gifts
+          <Icon name="trash" className="h-4 w-4" /> Clear {demoCount || ''} demo pledges
         </Button>
       </div>
     </Card>

@@ -76,7 +76,7 @@ export function OverlayView({ overlay, leaving }: { overlay: Overlay; leaving: b
         </p>
         {milestone ? (
           <p className="anim-rise eyebrow mt-4 text-[54px] tracking-[0.3em] text-white/85" style={{ animationDelay: '420ms' }}>
-            Raised
+            Pledged
           </p>
         ) : (
           overlay.name && (

@@ -23,7 +23,7 @@ export function QuickAddPanel({ event, api }: { event: FundraisingEvent; api: Qu
   return (
     <Card
       eyebrow="Stage entry"
-      title="Quick add donation"
+      title="Quick add pledge"
       actions={
         <span className="hidden items-center gap-1.5 text-xs text-slate-500 sm:flex">
           Type amount, press <kbd className="rounded-md bg-slate-100 px-1.5 py-0.5 font-semibold text-slate-700 ring-1 ring-slate-200">Enter</kbd>
@@ -90,7 +90,7 @@ export function QuickAddPanel({ event, api }: { event: FundraisingEvent; api: Qu
           </div>
           <div>
             <label htmlFor="qa-name" className="mb-1.5 block text-sm font-semibold text-slate-700">
-              Donor name <span className="font-normal text-slate-400">(optional)</span>
+              Name <span className="font-normal text-slate-400">(optional)</span>
             </label>
             <Input
               id="qa-name"
@@ -114,7 +114,7 @@ export function QuickAddPanel({ event, api }: { event: FundraisingEvent; api: Qu
           <div>
             <p className="mb-1.5 text-sm font-semibold text-slate-700">Show on screen as</p>
             <Segmented<Recognition>
-              label="Show donor on screen as"
+              label="Show pledger on screen as"
               size="lg"
               value={form.recognition}
               onChange={(v) => setForm({ ...form, recognition: v })}
@@ -138,7 +138,7 @@ export function QuickAddPanel({ event, api }: { event: FundraisingEvent; api: Qu
 
         <Button type="submit" variant="primary" size="xl" className="w-full" disabled={!amount || paused}>
           <Icon name="plus" className="h-6 w-6" />
-          {amount ? `Add ${money(amount)}` : 'Add donation'}
+          {amount ? `Add ${money(amount)}` : 'Add pledge'}
           <span className="ml-2 hidden sm:inline">
             <Kbd>Enter ↵</Kbd>
           </span>

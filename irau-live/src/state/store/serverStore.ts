@@ -1,4 +1,5 @@
-import type { AppState } from '../../types/index.ts';
+import type { AppState, DonorAccount, DonorSession } from '../../types/index.ts';
+import type { JoinInput, JoinResult, PledgeResult } from '../pledging.ts';
 import type { Action } from '../actions.ts';
 import { reducer } from '../reducer.ts';
 import type { EventStore, SyncStatus } from './types.ts';
@@ -78,6 +79,39 @@ export class ServerEventStore implements EventStore {
     void this.flush();
   };
 
+  joinAsDonor = async (input: JoinInput): Promise<JoinResult> => {
+    try {
+      const res = await fetch(`${this.baseUrl}/donor/join`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(input) });
+      return (await res.json()) as JoinResult;
+    } catch {
+      return { ok: false, error: 'No connection — please check your Wi-Fi and try again.' };
+    }
+  };
+
+  submitPledge = async (session: DonorSession, amount: number, levelId?: string): Promise<PledgeResult> => {
+    try {
+      const res = await fetch(`${this.baseUrl}/pledge`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ donorId: session.donorId, token: session.token, amount, levelId }),
+      });
+      return (await res.json()) as PledgeResult;
+    } catch {
+      return { ok: false, error: 'No connection — your pledge was not sent. Please try again.' };
+    }
+  };
+
+  listDonors = async (): Promise<DonorAccount[]> => {
+    const res = await fetch(`${this.baseUrl}/donors`, { headers: { 'x-operator-key': sessionStorage.getItem(KEY_SESSION) ?? '' }, cache: 'no-store' });
+    if (!res.ok) throw new Error('Operator passcode required');
+    return (await res.json()) as DonorAccount[];
+  };
+
+  publicBaseUrl = () => this.lanUrl;
+
+  /** Set from the server's health probe: an address other devices on the network can use. */
+  lanUrl: string | null = null;
+
   authorise = async (passcode: string) => {
     try {
       const res = await fetch(`${this.baseUrl}/auth`, {
@@ -88,6 +122,7 @@ export class ServerEventStore implements EventStore {
       if (!res.ok) return false;
       sessionStorage.setItem(KEY_SESSION, passcode);
       this.setStatus({ authorised: true, error: null });
+      this.connect(); // reconnect with operator access to see pledges awaiting approval
       void this.flush();
       return true;
     } catch {
@@ -98,7 +133,8 @@ export class ServerEventStore implements EventStore {
 
   private connect() {
     this.source?.close();
-    const es = new EventSource(`${this.baseUrl}/stream`);
+    const key = sessionStorage.getItem(KEY_SESSION);
+    const es = new EventSource(`${this.baseUrl}/stream${key ? `?key=${encodeURIComponent(key)}` : ''}`);
     this.source = es;
     es.addEventListener('state', (e) => {
       try {

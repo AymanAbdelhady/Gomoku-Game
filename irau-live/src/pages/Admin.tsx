@@ -6,6 +6,7 @@ import { LevelControl } from '../components/admin/LevelControl';
 import { SlideControl } from '../components/admin/SlideControl';
 import { DonationFeedPanel } from '../components/admin/DonationFeedPanel';
 import { DemoPanel } from '../components/admin/DemoPanel';
+import { PendingPledgesPanel } from '../components/admin/PendingPledgesPanel';
 import { StagePreview } from '../components/admin/StagePreview';
 import { useQuickAdd } from '../components/admin/useQuickAdd';
 import { SHORTCUTS, useShortcuts } from '../components/admin/useShortcuts';
@@ -47,6 +48,7 @@ export function Admin() {
         </div>
         <div className="space-y-5 lg:col-span-2 2xl:col-span-1">
           <div className="grid gap-5 lg:grid-cols-2 2xl:grid-cols-1">
+            <PendingPledgesPanel />
             <DonationFeedPanel />
             <DemoPanel />
           </div>

@@ -10,17 +10,22 @@ export type RegionCode = 'VIC' | 'WA' | 'SA' | 'NSW' | 'ACT' | 'QLD';
 
 export type EventStatus = 'live' | 'paused';
 
-/** How a donor wishes to be recognised on screen. We never hold contact or payment details. */
+/** How a pledger wishes to be recognised on screen. */
 export type Recognition = 'name' | 'family' | 'anonymous';
 
-export type DonationSource = 'stage' | 'online' | 'demo';
+/**
+ * Where a pledge came from: called from the stage and entered by the
+ * operator, made by a guest on their phone, or simulated in Demo Mode.
+ * ('online' is reserved for a future payment-platform webhook.)
+ */
+export type DonationSource = 'stage' | 'app' | 'online' | 'demo';
 
 export type GivingFrequency = 'one-off' | 'monthly';
 
 /**
- * A donor, as far as this system is concerned, is only a display name and a
- * recognition preference. Emails, phone numbers and payment data belong in the
- * payment platform / CRM and must never be entered here.
+ * The public face of a pledger: a display name and recognition preference.
+ * Contact details for pledge follow-up live in a separate, operator-only
+ * store (see DonorAccount) and are never part of the shared event state.
  */
 export interface Donor {
   /** Name as the donor wishes it to be read, e.g. "Ahmed" or "Sarah". */
@@ -28,6 +33,11 @@ export interface Donor {
   recognition: Recognition;
 }
 
+/**
+ * A pledge. (The type keeps its original name; everything user-facing calls
+ * it a pledge.) Pledges are promises to give, completed later through the
+ * official donation page — this system never takes payment.
+ */
 export interface Donation {
   id: string;
   eventId: string;
@@ -41,6 +51,50 @@ export interface Donation {
   source: DonationSource;
   /** Giving level that was active when the gift was taken, if any. */
   levelId?: string;
+  /** Set for pledges made from a phone: links to the private DonorAccount. */
+  donorId?: string;
+  /** Made on a guest's phone (real, or simulated in Demo Mode). */
+  viaPhone?: boolean;
+}
+
+export type Pledge = Donation;
+
+/** How phone pledging works for an event. */
+export interface PledgeSettings {
+  enabled: boolean;
+  /** Short code shown on screen; guests enter it (or scan it) to join. */
+  code: string;
+  /** 'auto': phone pledges go straight on screen. 'manual': an operator approves each one. */
+  approval: 'auto' | 'manual';
+  /** Largest single pledge accepted from a phone. */
+  maxAmount: number;
+  /** Address phones use to reach this app (for the QR code). Blank = detect automatically. */
+  publicUrl: string;
+}
+
+/**
+ * PRIVATE — a guest who joined from their phone. Held only by the sync
+ * server (server/data/donors.json) or, in same-browser mode, this browser.
+ * Never included in AppState, never sent to displays.
+ */
+export interface DonorAccount {
+  id: string;
+  eventId: string;
+  name: string;
+  recognition: Recognition;
+  mobile: string;
+  email: string;
+  consent: boolean;
+  createdAt: number;
+}
+
+/** What a phone keeps after joining. The token proves it is the same guest. */
+export interface DonorSession {
+  donorId: string;
+  token: string;
+  eventId: string;
+  name: string;
+  recognition: Recognition;
 }
 
 export interface GivingLevel {
@@ -176,6 +230,11 @@ export interface FundraisingEvent {
   brand: BrandColours;
   display: DisplayOptions;
 
+  pledging: PledgeSettings;
+  /** Number of guests who have joined from their phones (a count only). */
+  joinedCount: number;
+  /** Phone pledges waiting for operator approval (approval: 'manual'). */
+  pendingPledges: Donation[];
   donations: Donation[];
   live: LiveState;
   demo: DemoState;

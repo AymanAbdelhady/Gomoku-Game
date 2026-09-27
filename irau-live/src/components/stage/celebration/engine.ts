@@ -174,7 +174,8 @@ export class CelebrationEngine {
   }
 
   private tick = (now: number) => {
-    const dt = Math.min(48, now - this.lastTime);
+    // rAF timestamps can be a hair earlier than performance.now() on the first frame.
+    const dt = Math.max(0, Math.min(48, now - this.lastTime));
     this.lastTime = now;
     const step = dt / 16.67;
     const { ctx, canvas } = this;

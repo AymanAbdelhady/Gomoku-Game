@@ -44,11 +44,13 @@ export function AppealSlide({ data }: { data: StageData }) {
 
       <div className="absolute inset-x-[120px] top-[760px] flex min-h-[80px] items-center justify-center gap-4">
         {pledges.length === 0 ? (
-          <p className="anim-breathe text-[28px] text-white/50">Raise your hand, or scan the QR code to give.</p>
+          <p className="anim-breathe text-[28px] text-white/55">
+            Raise your hand{event.pledging.enabled ? <>, or pledge from your phone with code <strong className="tabular tracking-[0.12em] text-white">{event.pledging.code}</strong></> : ''}.
+          </p>
         ) : (
           <>
             <span className="eyebrow mr-4 text-[20px] text-white/55">
-              {pledges.length} {pledges.length === 1 ? 'gift' : 'gifts'} at this level
+              {pledges.length} {pledges.length === 1 ? 'pledge' : 'pledges'} at this level
             </span>
             {shown.map((d) => (
               <span key={d.id} className={cn('anim-chip-in rounded-full px-6 py-3 text-[26px] font-medium ring-1', gold ? 'bg-gold/15 text-white ring-gold/40' : 'bg-white/10 text-white ring-white/15')}>

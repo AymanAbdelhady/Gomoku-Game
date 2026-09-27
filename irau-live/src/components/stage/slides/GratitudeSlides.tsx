@@ -26,12 +26,12 @@ export function ThankYouSlide({ data }: { data: StageData }) {
       </p>
       <div className="anim-rise mt-16 flex items-end gap-24" style={{ animationDelay: '380ms' }}>
         <div>
-          <p className="eyebrow text-[20px] text-teal">Raised tonight</p>
+          <p className="eyebrow text-[20px] text-teal">Pledged tonight</p>
           <AnimatedAmount value={totals.raised} reduced={reduced} className="mt-3 text-[110px] font-semibold tracking-[-0.03em] text-white" />
         </div>
         <div className="pb-3 text-left">
           <p className="tabular text-[56px] font-semibold leading-none text-white">{formatNumber(totals.donorCount)}</p>
-          <p className="eyebrow mt-3 text-[18px] text-white/55">Donors</p>
+          <p className="eyebrow mt-3 text-[18px] text-white/55">Pledges</p>
         </div>
         <div className="pb-3 text-left">
           <p className="tabular text-[56px] font-semibold leading-none text-white">{percent(totals.progress, 0)}</p>
@@ -55,7 +55,7 @@ export function MilestoneSlide({ data }: { data: StageData }) {
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
       <Rings gold />
-      <p className="eyebrow anim-rise text-[26px] text-gold">{milestone ? `${event.name} · milestone` : 'Raised so far'}</p>
+      <p className="eyebrow anim-rise text-[26px] text-gold">{milestone ? `${event.name} · milestone` : 'Pledged so far'}</p>
       <div className="anim-rise mt-6 flex items-baseline gap-8" style={{ animationDelay: '120ms' }}>
         {milestone ? (
           <span className="tabular text-[220px] font-semibold leading-none tracking-[-0.04em] text-white text-glow">{money(milestone.amount)}</span>
@@ -64,7 +64,7 @@ export function MilestoneSlide({ data }: { data: StageData }) {
         )}
       </div>
       <p className="eyebrow anim-rise mt-2 text-[56px] tracking-[0.3em] text-white/85" style={{ animationDelay: '200ms' }}>
-        Raised
+        Pledged
       </p>
       <h2 className="anim-rise mt-14 font-display text-[88px] font-[480] leading-none text-white" style={{ animationDelay: '320ms' }}>
         {slide?.title}

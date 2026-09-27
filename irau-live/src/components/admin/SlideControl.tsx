@@ -58,7 +58,7 @@ export function SlideControl() {
           className={cn('flex h-14 items-center gap-3 rounded-xl px-3.5 text-left text-[14px] font-semibold transition', paused ? 'bg-amber-400 text-amber-950' : 'bg-white text-slate-700 ring-1 ring-inset ring-slate-200 hover:ring-amber-400')}
         >
           <Icon name={paused ? 'play' : 'pause'} className="h-5 w-5 shrink-0" />
-          {paused ? 'Resume donations' : 'Pause donations'}
+          {paused ? 'Resume pledges' : 'Pause pledges'}
         </button>
       </div>
 
@@ -66,7 +66,7 @@ export function SlideControl() {
         <p className="text-sm font-semibold text-slate-700">Moments</p>
         <div className="flex flex-wrap gap-2">
           <Button size="sm" disabled={!lastGift} onClick={() => lastGift && dispatch({ type: 'donation/recognise', eventId: event.id, id: lastGift.id, at: Date.now() })}>
-            <Icon name="sparkle" className="h-4 w-4" /> Thank last donor{lastGift ? ` (${money(lastGift.amount)})` : ''}
+            <Icon name="sparkle" className="h-4 w-4" /> Thank last pledger{lastGift ? ` (${money(lastGift.amount)})` : ''}
           </Button>
           <Button size="sm" onClick={() => dispatch({ type: 'live/clearOverlays', eventId: event.id })}>
             <Icon name="x" className="h-4 w-4" /> Clear overlays
@@ -91,9 +91,9 @@ export function SlideControl() {
         )}
         <p className="text-[13px] text-slate-500">Milestones celebrate automatically when the total passes them.</p>
         <div className="pt-1">
-          <p className="mb-1.5 text-sm font-semibold text-slate-700">Gift celebrations</p>
+          <p className="mb-1.5 text-sm font-semibold text-slate-700">Pledge celebrations</p>
           <Segmented<CelebrationLevel>
-            label="Gift celebrations"
+            label="Pledge celebrations"
             value={event.display.celebration}
             onChange={(celebration) => dispatch({ type: 'event/update', eventId: event.id, patch: { display: { ...event.display, celebration } } })}
             options={[{ value: 'subtle', label: 'Subtle' }, { value: 'standard', label: 'Standard' }, { value: 'festive', label: 'Festive' }]}

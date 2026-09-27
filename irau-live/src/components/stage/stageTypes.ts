@@ -15,4 +15,6 @@ export interface StageData {
   /** Most recent gift received while this screen was open. */
   gift: Gift | null;
   pulseKey: string | number;
+  /** Pledges queued behind the one in the spotlight. */
+  waiting: number;
 }

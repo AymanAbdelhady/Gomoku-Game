@@ -56,7 +56,7 @@ export function CelebrationLayer({ gift, goldThreshold, level, enabled }: { gift
     const n = (x: number) => Math.max(4, Math.round(x * k));
 
     const tail = barTail.current;
-    const source = locate(root, 'feed-top') ?? locate(root, 'total') ?? { x: STAGE_W / 2, y: 220 };
+    const source = locate(root, 'spotlight') ?? locate(root, 'feed-top') ?? locate(root, 'total') ?? { x: STAGE_W / 2, y: 220 };
     const target = () => locate(root, 'bar-head') ?? { x: STAGE_W / 2, y: STAGE_H - 120 };
 
     engine.comet(source, target, {

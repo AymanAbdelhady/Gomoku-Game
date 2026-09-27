@@ -11,6 +11,7 @@ const PASSCODE = (import.meta.env.VITE_ADMIN_PASSCODE as string | undefined) || 
 interface Health {
   ok: boolean;
   service?: string;
+  lanUrls?: string[];
 }
 
 async function probe(url: string, timeoutMs: number): Promise<Health | null> {
@@ -39,9 +40,12 @@ export async function createStore(): Promise<EventStore> {
     const health = await probe(SYNC_URL, MODE === 'server' ? 5000 : 1200);
     if (health) {
       try {
-        const res = await fetch(`${SYNC_URL}/state`, { cache: 'no-store' });
+        const key = sessionStorage.getItem('irau-live:operator-key');
+        const res = await fetch(`${SYNC_URL}/state`, { cache: 'no-store', headers: key ? { 'x-operator-key': key } : {} });
         const initial = normaliseState(await res.json());
-        return new ServerEventStore(SYNC_URL, initial);
+        const store = new ServerEventStore(SYNC_URL, initial);
+        store.lanUrl = health.lanUrls?.[0] ?? null;
+        return store;
       } catch {
         /* fall through */
       }

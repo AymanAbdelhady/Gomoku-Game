@@ -27,8 +27,8 @@ export function DonationFeedPanel() {
 
   return (
     <Card
-      eyebrow={`${event.donations.length} gifts`}
-      title="Donation feed"
+      eyebrow={`${event.donations.length} pledges`}
+      title="Pledge feed"
       bodyClassName="px-0 pb-2"
       actions={
         <label className="flex cursor-pointer items-center gap-2 text-xs font-semibold text-slate-500">
@@ -38,9 +38,9 @@ export function DonationFeedPanel() {
       }
     >
       {list.length === 0 ? (
-        <p className="px-6 py-10 text-center text-slate-500">No gifts yet. Add the first one, or start Demo Mode.</p>
+        <p className="px-6 py-10 text-center text-slate-500">No pledges yet. Add the first one, or start Demo Mode.</p>
       ) : (
-        <ol className="max-h-[640px] divide-y divide-slate-100 overflow-y-auto" aria-label="Donations, newest first">
+        <ol className="max-h-[640px] divide-y divide-slate-100 overflow-y-auto" aria-label="Pledges, newest first">
           {list.map((d) => {
             const shown = publicDonorName(d);
             const expanded = open === d.id;
@@ -57,6 +57,7 @@ export function DonationFeedPanel() {
                       <span className={cn('truncate text-[15px] font-semibold', d.nameHidden ? 'text-slate-400 line-through' : 'text-slate-900')}>{d.donor.name || 'Anonymous'}</span>
                       {d.source === 'demo' && <Badge tone="gold">Demo</Badge>}
                       {d.source === 'online' && <Badge tone="blue">Online</Badge>}
+                      {(d.source === 'app' || d.viaPhone) && <Badge tone="blue">Phone</Badge>}
                     </span>
                     <span className="mt-0.5 block text-[13px] text-slate-500">
                       <time dateTime={new Date(d.timestamp).toISOString()} title={clockTime(d.timestamp)}>
@@ -101,7 +102,7 @@ export function DonationFeedPanel() {
       <Dialog
         open={!!confirm}
         onClose={() => setConfirm(null)}
-        title="Remove this donation?"
+        title="Remove this pledge?"
         footer={
           <>
             <Button onClick={() => setConfirm(null)}>Keep it</Button>
@@ -118,7 +119,7 @@ export function DonationFeedPanel() {
           </>
         }
       >
-        <p className="text-slate-600">The total, donor count and live screen will update immediately. Use this for entry mistakes; to keep a gift but protect privacy, use “Hide name” instead.</p>
+        <p className="text-slate-600">The total, pledge count and live screen will update immediately. Use this for entry mistakes; to keep a pledge but protect privacy, use “Hide name” instead.</p>
       </Dialog>
     </Card>
   );

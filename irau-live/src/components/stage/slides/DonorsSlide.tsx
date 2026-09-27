@@ -19,9 +19,9 @@ export function DonorsSlide({ data }: { data: StageData }) {
           <p className="eyebrow text-[22px] text-teal">{slide?.subtitle}</p>
         </div>
         {donors.length === 0 ? (
-          <p className="mt-16 font-display text-[40px] italic text-white/50">The first gift of the evening will appear here.</p>
+          <p className="mt-16 font-display text-[40px] italic text-white/50">The first pledge of the evening will appear here.</p>
         ) : (
-          <ol className="mt-12 grid grid-cols-3 gap-x-10 gap-y-4" aria-label="Recent donors">
+          <ol className="mt-12 grid grid-cols-3 gap-x-10 gap-y-4" aria-label="Recent pledges">
             {donors.map((d, i) => {
               const gold = event.display.goldThreshold > 0 && d.amount >= event.display.goldThreshold;
               return (

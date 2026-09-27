@@ -7,11 +7,17 @@
  * tablet, the projector laptop and any confidence monitors share one state
  * across the venue network:
  *
- *   GET  /api/health    service probe used by the app's auto-detection
- *   GET  /api/state     current state snapshot (public: no personal data is stored)
- *   GET  /api/stream    Server-Sent Events: a `state` frame on every change
- *   POST /api/auth      { passcode } → 200 if it matches SYNC_OPERATOR_KEY
- *   POST /api/actions   { actions: [{ id, action }] } (header x-operator-key)
+ *   GET  /api/health       service probe used by the app's auto-detection
+ *   GET  /api/state        current state snapshot (operators with the key also see pledges awaiting approval)
+ *   GET  /api/stream       Server-Sent Events: a `state` frame on every change (?key= for operators)
+ *   POST /api/auth         { passcode } → 200 if it matches SYNC_OPERATOR_KEY
+ *   POST /api/actions      { actions: [{ id, action }] } (header x-operator-key)
+ *   POST /api/donor/join   guest joins from their phone (public, rate-limited)
+ *   POST /api/pledge       joined guest pledges an amount (public, rate-limited)
+ *   GET  /api/donors       PRIVATE pledger contact list for follow-up (header x-operator-key)
+ *
+ * Pledger contact details are kept in server/data/donors.json and are never
+ * part of the shared state that displays and phones receive.
  *
  * The same pure reducer used in the browser applies every action here, so
  * behaviour is identical in local and server modes. State is persisted to
@@ -26,8 +32,10 @@ import { readFile, writeFile, mkdir, stat } from 'node:fs/promises';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, extname, join, normalize, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { timingSafeEqual, randomInt } from 'node:crypto';
-import type { AppState } from '../src/types/index.ts';
+import { timingSafeEqual, randomInt, randomBytes, createHash } from 'node:crypto';
+import { networkInterfaces } from 'node:os';
+import type { AppState, DonorAccount } from '../src/types/index.ts';
+import { makeAccount, makePledge, pledgeError, redactPending, toSession, validateJoin, type JoinInput } from '../src/state/pledging.ts';
 import type { Action } from '../src/state/actions.ts';
 import { reducer } from '../src/state/reducer.ts';
 import { normaliseState } from '../src/state/store/persistence.ts';
@@ -36,12 +44,57 @@ import { createInitialState } from '../src/config/defaults.ts';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = join(ROOT, 'dist');
 const DATA_FILE = join(ROOT, 'server', 'data', 'state.json');
+const DONORS_FILE = join(ROOT, 'server', 'data', 'donors.json');
 const PORT = Number(process.env.PORT ?? 8787);
 const OPERATOR_KEY = process.env.SYNC_OPERATOR_KEY ?? 'gaza';
 
 let state: AppState = loadState();
 const seen: string[] = [];
-const clients = new Set<ServerResponse>();
+/** SSE clients, and whether each is an operator (sees pledges awaiting approval). */
+const clients = new Map<ServerResponse, boolean>();
+
+interface StoredDonor extends DonorAccount {
+  tokenHash: string;
+  pledges: number;
+  lastPledgeAt: number;
+}
+const donors: Map<string, StoredDonor> = loadDonors();
+
+function loadDonors(): Map<string, StoredDonor> {
+  try {
+    if (existsSync(DONORS_FILE)) return new Map((JSON.parse(readFileSync(DONORS_FILE, 'utf8')) as StoredDonor[]).map((d) => [d.id, d]));
+  } catch (err) {
+    console.warn('Could not read pledger list:', err);
+  }
+  return new Map();
+}
+async function saveDonors() {
+  await mkdir(dirname(DONORS_FILE), { recursive: true });
+  await writeFile(DONORS_FILE, JSON.stringify([...donors.values()]), { mode: 0o600 });
+}
+const hash = (s: string) => createHash('sha256').update(s).digest('hex');
+
+/** Simple fixed-window rate limiter keyed by IP or pledger. */
+const hits = new Map<string, { count: number; reset: number }>();
+function limited(key: string, max: number, windowMs: number): boolean {
+  const now = Date.now();
+  const h = hits.get(key);
+  if (!h || h.reset < now) {
+    hits.set(key, { count: 1, reset: now + windowMs });
+    return false;
+  }
+  h.count++;
+  return h.count > max;
+}
+const ip = (req: IncomingMessage) => req.socket.remoteAddress ?? 'unknown';
+
+function lanUrls(): string[] {
+  const out: string[] = [];
+  for (const list of Object.values(networkInterfaces())) {
+    for (const n of list ?? []) if (n.family === 'IPv4' && !n.internal) out.push(`http://${n.address}:${PORT}/`);
+  }
+  return out;
+}
 
 function loadState(): AppState {
   try {
@@ -67,8 +120,9 @@ function commit(action: Action) {
   if (next === state) return;
   state = next;
   scheduleSave();
-  const frame = `event: state\ndata: ${JSON.stringify(state)}\n\n`;
-  for (const res of clients) res.write(frame);
+  const full = `event: state\ndata: ${JSON.stringify(state)}\n\n`;
+  const pub = `event: state\ndata: ${JSON.stringify(redactPending(state))}\n\n`;
+  for (const [res, operator] of clients) res.write(operator ? full : pub);
 }
 
 // Demo clock: in server mode the server, not a browser, drives Demo Mode,
@@ -144,13 +198,16 @@ const server = createServer(async (req, res) => {
   const url = new URL(req.url ?? '/', 'http://local');
   const path = url.pathname.replace(/^.*\/api\//, '/api/');
   try {
-    if (path === '/api/health') return json(res, 200, { ok: true, service: 'irau-live-sync', rev: state.rev });
-    if (path === '/api/state' && req.method === 'GET') return json(res, 200, state);
+    if (path === '/api/health') return json(res, 200, { ok: true, service: 'irau-live-sync', rev: state.rev, lanUrls: lanUrls() });
+    if (path === '/api/state' && req.method === 'GET') {
+      return json(res, 200, keyMatches(req.headers['x-operator-key'] as string | undefined) ? state : redactPending(state));
+    }
 
     if (path === '/api/stream') {
+      const operator = keyMatches(url.searchParams.get('key') ?? undefined);
       res.writeHead(200, { 'content-type': 'text/event-stream', 'cache-control': 'no-store', connection: 'keep-alive', 'x-accel-buffering': 'no' });
-      res.write(`retry: 2000\nevent: state\ndata: ${JSON.stringify(state)}\n\n`);
-      clients.add(res);
+      res.write(`retry: 2000\nevent: state\ndata: ${JSON.stringify(operator ? state : redactPending(state))}\n\n`);
+      clients.set(res, operator);
       const ping = setInterval(() => res.write(': ping\n\n'), 15_000);
       req.on('close', () => {
         clearInterval(ping);
@@ -176,6 +233,57 @@ const server = createServer(async (req, res) => {
       return json(res, 200, { ok: true, state });
     }
 
+    if (path === '/api/donor/join' && req.method === 'POST') {
+      if (limited(`join:${ip(req)}`, 30, 10 * 60_000)) return json(res, 429, { ok: false, error: 'Too many attempts — please wait a moment and try again.' });
+      const input = await readJson<JoinInput>(req, 10_000);
+      const event = state.events[state.activeEventId];
+      const clean: JoinInput = {
+        code: String(input.code ?? ''),
+        name: String(input.name ?? ''),
+        recognition: (['name', 'family', 'anonymous'] as const).includes(input.recognition) ? input.recognition : 'name',
+        mobile: String(input.mobile ?? ''),
+        email: String(input.email ?? ''),
+        consent: input.consent === true,
+      };
+      const error = validateJoin(event, clean);
+      if (error) return json(res, 200, { ok: false, error });
+      const account = makeAccount(event, clean, `donor_${randomBytes(9).toString('hex')}`, Date.now());
+      const token = randomBytes(24).toString('hex');
+      donors.set(account.id, { ...account, tokenHash: hash(token), pledges: 0, lastPledgeAt: 0 });
+      await saveDonors();
+      commit({ type: 'donor/joined', eventId: event.id });
+      return json(res, 200, { ok: true, session: toSession(account, token) });
+    }
+
+    if (path === '/api/pledge' && req.method === 'POST') {
+      const body = await readJson<{ donorId?: string; token?: string; amount?: number; levelId?: string }>(req, 10_000);
+      const donor = body.donorId ? donors.get(body.donorId) : undefined;
+      if (!donor || !body.token || hash(String(body.token)) !== donor.tokenHash) return json(res, 200, { ok: false, error: 'Your session has ended — please join again.' });
+      const now = Date.now();
+      if (now - donor.lastPledgeAt < 3000 || donor.pledges >= 30 || limited(`pledge:${ip(req)}`, 60, 60_000)) {
+        return json(res, 200, { ok: false, error: 'One moment — please wait a few seconds between pledges.' });
+      }
+      const event = state.events[donor.eventId];
+      const amount = Number(body.amount);
+      const levelId = typeof body.levelId === 'string' ? body.levelId : undefined;
+      const error = pledgeError(event, donor, amount, levelId);
+      if (error) return json(res, 200, { ok: false, error });
+      const pledge = makePledge(event, donor, amount, `plg_${randomBytes(9).toString('hex')}`, now, levelId);
+      commit({ type: 'pledge/submit', pledge });
+      donor.pledges++;
+      donor.lastPledgeAt = now;
+      await saveDonors();
+      const after = state.events[event.id];
+      if (after.donations.some((d) => d.id === pledge.id)) return json(res, 200, { ok: true, status: 'approved', pledge });
+      if (after.pendingPledges.some((d) => d.id === pledge.id)) return json(res, 200, { ok: true, status: 'pending', pledge });
+      return json(res, 200, { ok: false, error: 'Your pledge could not be recorded. Please try again.' });
+    }
+
+    if (path === '/api/donors' && req.method === 'GET') {
+      if (!keyMatches(req.headers['x-operator-key'] as string | undefined)) return json(res, 401, { error: 'Operator passcode required' });
+      return json(res, 200, [...donors.values()].map(({ tokenHash: _h, pledges: _p, lastPledgeAt: _l, ...d }) => d));
+    }
+
     if (path.startsWith('/api/')) return json(res, 404, { error: 'Not found' });
     return serveStatic(req, res);
   } catch (err) {
@@ -188,7 +296,8 @@ server.listen(PORT, () => {
   console.log(`  ▸ Launcher        http://localhost:${PORT}/`);
   console.log(`  ▸ Live display    http://localhost:${PORT}/#/live`);
   console.log(`  ▸ Operator        http://localhost:${PORT}/#/admin`);
-  console.log(`  ▸ Donor page      http://localhost:${PORT}/#/give`);
+  console.log(`  ▸ Guest pledging  http://localhost:${PORT}/#/give`);
+  for (const u of lanUrls()) console.log(`  ▸ On the network  ${u}  (phones and tablets use this)`);
   if (!process.env.SYNC_OPERATOR_KEY) console.warn(`\n  ⚠ Using the default operator passcode "gaza". Set SYNC_OPERATOR_KEY before a real event.`);
   console.log('');
 });

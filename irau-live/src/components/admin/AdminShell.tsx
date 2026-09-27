@@ -54,7 +54,7 @@ export function AdminShell({ children, page }: { children: ReactNode; page: 'das
           <button
             onClick={() => dispatch({ type: 'event/status', eventId: event.id, status: paused ? 'live' : 'paused' })}
             className={cn('flex h-10 items-center gap-2 rounded-full px-4 text-sm font-bold uppercase tracking-wider ring-1 ring-inset transition', paused ? 'bg-amber-400 text-amber-950 ring-amber-300' : 'bg-emerald-500/15 text-emerald-200 ring-emerald-400/40')}
-            aria-label={paused ? 'Donations paused — resume' : 'Event live — pause donations'}
+            aria-label={paused ? 'Pledges paused — resume' : 'Event live — pause pledges'}
             title="Alt+P"
           >
             <span className={cn('h-2.5 w-2.5 rounded-full', paused ? 'bg-amber-900' : 'anim-live-dot bg-emerald-300')} />
@@ -67,7 +67,7 @@ export function AdminShell({ children, page }: { children: ReactNode; page: 'das
 
           <nav className="ml-auto flex items-center gap-1.5" aria-label="Operator navigation">
             <TopLink onClick={openLiveDisplay} icon="monitor" label="Open live display" />
-            <TopLink href={routeHref('/give')} icon="phone" label="Donor page" newTab />
+            <TopLink href={routeHref('/give')} icon="phone" label="Guest pledge page" newTab />
             {page === 'dashboard' ? <TopLink href={routeHref('/admin/settings')} icon="settings" label="Settings" /> : <TopLink href={routeHref('/admin')} icon="gauge" label="Dashboard" />}
             <TopLink onClick={lockAdmin} icon="lock" label="Lock" />
           </nav>

@@ -43,6 +43,9 @@ function apply(state: AppState, action: Action): AppState {
     case 'donation/add':
       return withEvent(state, action.donation.eventId, (event) => addDonations(event, [action.donation], !!action.recognise, action.donation.timestamp));
 
+    case 'pledge/submit':
+      return withEvent(state, action.pledge.eventId, (event) => submitPledge(event, action.pledge));
+
     default:
       return withEvent(state, action.eventId, (event) => applyToEvent(event, action));
   }
@@ -56,7 +59,7 @@ function withEvent(state: AppState, eventId: string, fn: (e: FundraisingEvent) =
   return { ...state, events: { ...state.events, [eventId]: updated } };
 }
 
-function applyToEvent(event: FundraisingEvent, action: Exclude<Action, { type: 'state/replace' | 'event/create' | 'event/activate' | 'donation/add' }>): FundraisingEvent {
+function applyToEvent(event: FundraisingEvent, action: Exclude<Action, { type: 'state/replace' | 'event/create' | 'event/activate' | 'donation/add' | 'pledge/submit' }>): FundraisingEvent {
   const touch = (e: FundraisingEvent, at?: number): FundraisingEvent => ({ ...e, updatedAt: at ?? e.updatedAt + 1 });
 
   switch (action.type) {
@@ -73,6 +76,21 @@ function applyToEvent(event: FundraisingEvent, action: Exclude<Action, { type: '
           return merged;
         }),
       });
+
+    case 'pledge/approve': {
+      const p = event.pendingPledges.find((x) => x.id === action.id);
+      if (!p || event.status !== 'live') return event;
+      // Approval time is when the audience sees it, so it celebrates as a fresh pledge.
+      const approved = { ...p, timestamp: action.at };
+      const rest = { ...event, pendingPledges: event.pendingPledges.filter((x) => x.id !== action.id) };
+      return touch(addDonations(rest, [approved], shouldRecognise(event, approved.amount), action.at));
+    }
+
+    case 'pledge/decline':
+      return touch({ ...event, pendingPledges: event.pendingPledges.filter((x) => x.id !== action.id) });
+
+    case 'donor/joined':
+      return touch({ ...event, joinedCount: event.joinedCount + 1 });
 
     case 'donation/remove':
       return touch({ ...event, donations: event.donations.filter((d) => d.id !== action.id) });
@@ -123,6 +141,8 @@ function applyToEvent(event: FundraisingEvent, action: Exclude<Action, { type: '
       return touch({
         ...event,
         donations: [],
+        pendingPledges: [],
+        joinedCount: 0,
         openingBalance: 0,
         openingDonorCount: 0,
         live: { slide: 'main', activeLevelId: null, celebratedMilestoneIds: [], overlays: [] },
@@ -137,7 +157,7 @@ function applyToEvent(event: FundraisingEvent, action: Exclude<Action, { type: '
       };
       if (e.donations.length === 0) {
         const history = demoHistory(e, action.at, action.seed, getTotals(e).raised);
-        e = markMilestones({ ...e, donations: history }, action.at, false).event;
+        e = markMilestones({ ...e, donations: history, joinedCount: e.joinedCount + Math.round(history.length * 0.4) }, action.at, false).event;
       }
       return touch({ ...e, live: { ...e.live, slide: 'main', activeLevelId: null } }, action.at);
     }
@@ -166,7 +186,7 @@ function applyToEvent(event: FundraisingEvent, action: Exclude<Action, { type: '
     case 'demo/tick': {
       if (!event.demo.running || event.status !== 'live') return event;
       const outcome = demoTick(event, action.at, action.seed, getTotals(event).raised);
-      let e: FundraisingEvent = { ...event, demo: { ...event.demo, tick: event.demo.tick + 1, running: !outcome.stop } };
+      let e: FundraisingEvent = { ...event, joinedCount: event.joinedCount + (outcome.joined ?? 0), demo: { ...event.demo, tick: event.demo.tick + 1, running: !outcome.stop } };
       if (outcome.levelId !== undefined || outcome.slide) {
         e = {
           ...e,
@@ -183,6 +203,27 @@ function applyToEvent(event: FundraisingEvent, action: Exclude<Action, { type: '
       return touch(e, action.at);
     }
   }
+}
+
+const MAX_PENDING = 200;
+
+/** Validates a phone pledge and routes it on screen or into the approval queue. */
+function submitPledge(event: FundraisingEvent, pledge: Donation): FundraisingEvent {
+  const { pledging } = event;
+  if (!pledging.enabled || event.status !== 'live') return event;
+  if (!(pledge.amount > 0) || pledge.amount > pledging.maxAmount) return event;
+  if (event.donations.some((d) => d.id === pledge.id) || event.pendingPledges.some((d) => d.id === pledge.id)) return event;
+  const p: Donation = { ...pledge, source: 'app', nameHidden: false };
+  if (pledging.approval === 'manual') {
+    if (event.pendingPledges.length >= MAX_PENDING) return event;
+    return { ...event, pendingPledges: [...event.pendingPledges, p], updatedAt: p.timestamp };
+  }
+  return addDonations(event, [p], shouldRecognise(event, p.amount), p.timestamp);
+}
+
+function shouldRecognise(event: FundraisingEvent, amount: number): boolean {
+  const t = event.display.recognitionThreshold;
+  return t > 0 && amount >= t;
 }
 
 function addDonations(event: FundraisingEvent, donations: Donation[], recognise: boolean, at: number): FundraisingEvent {

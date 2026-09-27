@@ -30,7 +30,7 @@ export function LevelControl() {
         <div className="mb-4 rounded-2xl bg-navy p-4 text-white">
           <p className="text-sm text-white/70">On screen: “{event.display.appealPrompt.replace('{amount}', money(active.amount))}”</p>
           <p className="mt-1 text-[15px]">
-            <strong className="tabular">{activeGifts.length}</strong> {activeGifts.length === 1 ? 'gift' : 'gifts'} at this level ·{' '}
+            <strong className="tabular">{activeGifts.length}</strong> {activeGifts.length === 1 ? 'pledge' : 'pledges'} at this level ·{' '}
             <strong className="tabular">{money(activeGifts.reduce((s, d) => s + d.amount, 0))}</strong>
           </p>
           {isPlaceholder(active.impact) && <p className="mt-2 text-xs text-amber-200">No confirmed impact line for this level — none is shown on screen.</p>}

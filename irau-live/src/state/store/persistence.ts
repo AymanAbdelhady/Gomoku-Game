@@ -39,6 +39,8 @@ export function normaliseState(input: unknown): AppState {
       display: { ...base.display, ...e.display },
       live: { ...base.live, ...e.live },
       demo: { ...base.demo, ...e.demo },
+      pledging: { ...base.pledging, ...e.pledging },
+      pendingPledges: Array.isArray(e.pendingPledges) ? e.pendingPledges : [],
       slides: base.slides.map((s) => ({ ...s, ...(e.slides?.find((x) => x.id === s.id) ?? {}) })),
       donations: Array.isArray(e.donations) ? e.donations : [],
     };

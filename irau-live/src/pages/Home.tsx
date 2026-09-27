@@ -44,20 +44,20 @@ export function Home() {
           <h1 className="mt-4 font-display text-5xl font-[520] leading-[1.02] tracking-tight sm:text-7xl">{event.name}</h1>
           <p className="mt-5 text-lg leading-relaxed text-white/70 sm:text-xl">{event.tagline}</p>
           <p className="tabular mt-6 text-white/60">
-            <span className="text-2xl font-semibold text-white">{money(totals.raised)}</span> raised of {money(totals.target)} · {percent(totals.progress, 0)}
+            <span className="text-2xl font-semibold text-white">{money(totals.raised)}</span> pledged of {money(totals.target)} · {percent(totals.progress, 0)}
           </p>
         </div>
 
         <div className="mt-12 grid gap-4 md:grid-cols-3">
           <Tile icon="monitor" title="Live event display" text="The 16:9 stage screen for projectors and LED walls." onClick={openLiveDisplay} href={routeHref('/live')} cta="Open display" />
           <Tile icon="gauge" title="Operator dashboard" text="Enter pledges, run appeals and control the big screen." href={routeHref('/admin')} cta="Open dashboard" />
-          <Tile icon="phone" title="Donor page" text="Mobile page for the QR code — give from your seat." href={routeHref('/give')} cta="Open donor page" />
+          <Tile icon="phone" title="Guest pledging" text="Guests scan the QR code, join, and pledge from their seat." href={routeHref('/give')} cta="Open guest page" />
         </div>
 
         <div className="mt-6 flex flex-col gap-4 rounded-3xl bg-gold/10 p-6 ring-1 ring-gold/30 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="font-semibold text-gold">Demo mode</p>
-            <p className="mt-1 text-sm text-white/70">Simulated gifts every few seconds, appeals and milestones — for rehearsals and presentations. No real payments are involved.</p>
+            <p className="mt-1 text-sm text-white/70">Simulated pledges every few seconds, appeals and milestones — for rehearsals and presentations. No real payments are involved.</p>
           </div>
           <button onClick={startDemo} className="inline-flex h-14 shrink-0 items-center justify-center gap-2 rounded-2xl bg-gold px-7 font-bold text-[#1d1403] transition hover:brightness-105">
             <Icon name="play" /> {event.demo.running ? 'Watch the demo' : 'Start demo'}

@@ -22,7 +22,7 @@ export function MomentumMeter({ donations, now, pulseKey }: { donations: Donatio
   const max = Math.max(3, ...counts);
 
   return (
-    <div className="flex items-end gap-5" aria-label={`${recent} gifts in the last 10 minutes`}>
+    <div className="flex items-end gap-5" aria-label={`${recent} pledges in the last 10 minutes`}>
       <div className="flex h-[56px] items-end gap-[5px]" aria-hidden="true">
         {counts.map((c, i) => {
           const current = i === BUCKETS - 1;
@@ -39,7 +39,7 @@ export function MomentumMeter({ donations, now, pulseKey }: { donations: Donatio
         <p className="tabular text-[54px] font-semibold leading-none text-white">
           <span key={pulseKey} className="anim-count-pop">{recent}</span>
         </p>
-        <p className="eyebrow mt-3 whitespace-nowrap text-[17px] text-white/50">Gifts · last 10 min</p>
+        <p className="eyebrow mt-3 whitespace-nowrap text-[17px] text-white/50">Pledges · last 10 min</p>
       </div>
     </div>
   );

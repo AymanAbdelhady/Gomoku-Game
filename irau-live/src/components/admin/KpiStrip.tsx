@@ -13,14 +13,16 @@ export function KpiStrip() {
 
   return (
     <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-[1.5fr_1fr_0.8fr_1.3fr_1fr]">
-      <Kpi label="Total raised" dark className="col-span-2 xl:col-span-1">
+      <Kpi label="Total pledged" dark className="col-span-2 xl:col-span-1">
         <p className="tabular text-[40px] font-semibold leading-none tracking-tight">{money(totals.raised)}</p>
         <p className="mt-2 text-sm text-white/65">{next ? `${money(next.amount - totals.raised)} to next milestone (${money(next.amount)})` : 'All milestones reached'}</p>
       </Kpi>
       <TargetKpi target={event.target} eventId={event.id} />
-      <Kpi label="Donors">
+      <Kpi label="Pledges">
         <p className="tabular text-[32px] font-semibold leading-none">{formatNumber(totals.donorCount)}</p>
-        <p className="mt-2 text-sm text-slate-500">{event.donations.length} entered tonight</p>
+        <p className="mt-2 text-sm text-slate-500">
+          {event.donations.length} tonight{event.pledging.enabled ? ` · ${event.joinedCount} guests joined` : ''}
+        </p>
       </Kpi>
       <Kpi label="Progress">
         <p className="tabular text-[32px] font-semibold leading-none">{percent(totals.progress)}</p>

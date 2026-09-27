@@ -210,3 +210,8 @@
   50% { box-shadow: 0 0 22px 2px rgba(255, 255, 255, 0.18); }
 }
 .anim-breathe-soft { animation: breathe-soft 3.2s ease-in-out infinite; }
+@keyframes card-pop {
+  0% { opacity: 0; transform: translateY(46px) scale(0.72) rotate(-2.5deg); }
+  55% { opacity: 1; transform: translateY(-4px) scale(1.04) rotate(0.4deg); }
+  100% { opacity: 1; transform: translateY(0) scale(1) rotate(0); }
+}

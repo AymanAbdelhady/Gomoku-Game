@@ -9,6 +9,11 @@ import type { AppState, Donation, EventStatus, FundraisingEvent, SlideId } from 
  */
 export type Action =
   | { type: 'donation/add'; donation: Donation; recognise?: boolean }
+  /** A pledge from a guest's phone. Built by the server/store from validated input, never by the phone itself. */
+  | { type: 'pledge/submit'; pledge: Donation }
+  | { type: 'pledge/approve'; eventId: string; id: string; at: number }
+  | { type: 'pledge/decline'; eventId: string; id: string }
+  | { type: 'donor/joined'; eventId: string }
   | { type: 'donation/update'; eventId: string; id: string; patch: Partial<Pick<Donation, 'donor' | 'anonymous' | 'nameHidden' | 'amount'>> }
   | { type: 'donation/remove'; eventId: string; id: string }
   | { type: 'donation/recognise'; eventId: string; id: string; at: number }
@@ -17,7 +22,7 @@ export type Action =
   | { type: 'live/milestone'; eventId: string; milestoneId: string; at: number }
   | { type: 'live/clearOverlays'; eventId: string }
   | { type: 'event/status'; eventId: string; status: EventStatus }
-  | { type: 'event/update'; eventId: string; patch: Partial<Omit<FundraisingEvent, 'id' | 'donations' | 'live' | 'demo'>> }
+  | { type: 'event/update'; eventId: string; patch: Partial<Omit<FundraisingEvent, 'id' | 'donations' | 'live' | 'demo' | 'pendingPledges' | 'joinedCount'>> }
   | { type: 'event/setRaised'; eventId: string; raised: number }
   | { type: 'event/create'; event: FundraisingEvent; activate?: boolean }
   | { type: 'event/delete'; eventId: string }

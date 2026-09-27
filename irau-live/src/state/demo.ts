@@ -36,6 +36,8 @@ export interface DemoOutcome {
   slide?: SlideId;
   levelId?: string | null;
   stop?: boolean;
+  /** Simulated guests joining from their phones this tick. */
+  joined?: number;
 }
 
 function demoDonor(rand: () => number): { name: string; recognition: Recognition } {
@@ -55,6 +57,7 @@ function makeDonation(event: FundraisingEvent, id: string, amount: number, at: n
     nameHidden: false,
     timestamp: at,
     source: 'demo',
+    viaPhone: rand() < 0.55,
     ...(levelId ? { levelId } : {}),
   };
 }
@@ -88,6 +91,7 @@ export function demoTick(event: FundraisingEvent, at: number, seed: number, rais
   const recogniseAt = event.display.recognitionThreshold;
 
   if (raised >= event.target * 1.2) return { donations: [], stop: true };
+  if (rand() < 0.35) outcome.joined = 1;
 
   if (event.demo.autoStage) {
     const cue = SCRIPT[t];

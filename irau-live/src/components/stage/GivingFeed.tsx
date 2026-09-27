@@ -25,12 +25,12 @@ export function GivingFeed({ donations, now, showAmounts, goldThreshold, rows = 
   }, [newestId, reduced]);
 
   if (list.length === 0) {
-    return <p className="font-display text-[30px] italic text-white/45">The first gift of the evening will appear here.</p>;
+    return <p className="font-display text-[30px] italic text-white/45">The first pledge of the evening will appear here.</p>;
   }
 
   return (
     <div className="relative overflow-hidden" style={{ height: ROW_H * rows, maskImage: 'linear-gradient(to bottom, black 70%, transparent)', WebkitMaskImage: 'linear-gradient(to bottom, black 70%, transparent)' }}>
-      <ol ref={listRef} aria-label="Recent giving" className="relative">
+      <ol ref={listRef} aria-label="Recent pledges" className="relative">
         {list.map((d, i) => {
           const fresh = now - d.timestamp < 6000;
           const gold = d.amount >= goldThreshold && goldThreshold > 0;
@@ -43,7 +43,14 @@ export function GivingFeed({ donations, now, showAmounts, goldThreshold, rows = 
             >
               <div className={cn('min-w-0', i === 0 && fresh && 'anim-feed-in')}>
                 <p className="truncate text-[32px] font-medium leading-tight text-white">{publicDonorName(d)}</p>
-                <p className="text-[19px] font-medium text-white/45">{timeAgo(d.timestamp, now)}</p>
+                <p className="flex items-center gap-2 text-[19px] font-medium text-white/45">
+                  {timeAgo(d.timestamp, now)}
+                  {(d.source === 'app' || d.viaPhone) && (
+                    <span className="flex items-center gap-1 text-teal/90">
+                      · <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2.5" /></svg> phone
+                    </span>
+                  )}
+                </p>
               </div>
               {showAmounts && (
                 <span className={cn('tabular shrink-0 text-[34px] font-semibold', gold ? 'text-gold' : 'text-white')}>{money(d.amount)}</span>

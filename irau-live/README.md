@@ -1,10 +1,10 @@
 # Gaza 3 Years On — Live Fundraising Platform
 
-**Islamic Relief Australia** · live event display, operator dashboard and mobile donor page.
+**Islamic Relief Australia** · live pledge display, operator dashboard and guest pledging from phones.
 
 Built for the *Gaza 3 Years On* touring events (VIC · NSW · QLD · WA · SA · ACT). The audience watches giving happen live on the venue screen. The fundraising team enters pledges called from the stage, runs giving-level appeals and switches slides from a tablet or laptop backstage.
 
-> **Prototype status.** A working product, but authentication is placeholder and there is no payment integration by design. See [What still needs a real backend](#8-what-still-needs-a-real-backendservice).
+> **Prototype status.** A working product, but authentication is placeholder and there is no payment integration by design. See [What still needs a real backend](#9-what-still-needs-a-real-backendservice).
 
 | Route | Who | What |
 |---|---|---|
@@ -12,7 +12,7 @@ Built for the *Gaza 3 Years On* touring events (VIC · NSW · QLD · WA · SA ·
 | `#/live` | Audience | 16:9 stage display (press **F** for full screen) |
 | `#/admin` | Operator | Command centre: quick add, appeals, slides, feed, demo |
 | `#/admin/settings` | Operator | Every editable event setting |
-| `#/give` | Donors (mobile) | Progress, giving options, **Donate now** → official site |
+| `#/give` | Guests (mobile) | Scan the QR code, join, and pledge from your seat. **Complete my pledge** opens the official site. |
 
 ---
 
@@ -34,6 +34,8 @@ SYNC_OPERATOR_KEY=choose-a-passcode PORT=8787 npm run serve   # after a build
 ```
 
 Node ≥ 22.18 is required, because the server runs TypeScript natively.
+
+**Guests pledging from their own phones needs the sync server.** The phones and the display must share one event, so run `npm run start` and put the laptop and guests on the same network (or host it; see Deploying). On start-up the server prints the network address phones should use.
 
 ---
 
@@ -129,7 +131,7 @@ For a two-window demo on one laptop, open `#/live` on the projector (press F) an
 3. To track QR scans separately, set **QR code URL** (e.g. the same link with UTM parameters). To send scans to this app's own donor page instead, host the app publicly and use `https://your-host/#/give`.
 4. Use **Test link** and scan the preview QR with a phone before doors open. Repeat for each city, or create the other cities with **Copy current settings**.
 
-The app **never processes payments or collects card, email or phone details**. "Donate now" hands off to the official website.
+The app **never processes payments or collects card details**. "Complete my pledge" and "Donate" hand off to the official website. Guests' mobile numbers and emails are collected only for pledge follow-up, and are kept apart from everything shown on screens (see [Phone pledging](#6-phone-pledging)).
 
 ---
 
@@ -154,7 +156,41 @@ Open `http://<laptop-ip>:8787/#/live` on the display machine and `…/#/admin` o
 
 ---
 
-## 6. Gift celebrations
+## 6. Phone pledging
+
+The evening runs on **pledges**: promises to give that guests complete afterwards on the official donation page. Pledges can reach the screen two ways:
+- **From the stage:** the operator enters them on the dashboard.
+- **From guests' phones:** described below.
+
+**How a guest pledges**
+1. **Scan the QR code** on the big screen. It opens `#/give` with tonight's **event code** already filled in; the code is also shown on screen for anyone typing it in.
+2. **Join** with a first name, how to appear on screen (*Name*, *& Family* or *Anonymous*), a mobile number or email, and consent to be contacted about the pledge. This is the guest's sign-in; the phone remembers them for the night.
+3. **Pledge.** When an appeal is running on stage, the phone shows it live with a one-tap **"I'll pledge $5,000"** button. Otherwise the guest picks a giving level or types an amount, then confirms.
+4. **Celebrate.** The phone bursts with stars and says "Look up — your pledge is on the big screen now!", then offers **Complete my pledge now** and a running list of *My pledges tonight*.
+
+**What the audience sees**
+- Every pledge arrives on a **spotlight card**: an initial avatar (a heart for anonymous pledges), the name, the amount, and a phone badge if it came from a phone.
+- The celebration's light leaves the card and lands in the bar.
+- When many phones pledge at once, cards play **one after another** with a "+3 more" badge. The queue speeds up as it grows, and the total, bar and feed rise exactly as each card lands.
+- The QR slide and the corner QR show the event code and a live "N guests have joined" count.
+
+**Operator controls** (Settings → *Phone pledging*)
+- Turn phone pledging on or off. When off, the QR code goes straight to the donation page.
+- **New code** issues a fresh event code, so only people in the room can join.
+- **Approval:** phone pledges appear *Instantly*, or *After I approve* using the dashboard's approvals panel (approve, decline, or approve all).
+- A maximum pledge from a phone (larger amounts are directed to the team).
+- The address phones use. On the venue sync server, the computer's network address is detected automatically.
+- **Pledgers (private):** each guest's name, mobile/email and pledges, with CSV export for follow-up.
+
+**Privacy and safety**
+- Contact details are stored only by the sync server (`server/data/donors.json`, file mode 600) and returned only to operators holding the passcode. They are never part of the shared state sent to displays or phones.
+- Pledges awaiting approval are withheld from public screens.
+- Names are cleaned to letters only (40 characters max). Operators can hide any name after it appears.
+- The server rate-limits joining and pledging, and requires a few seconds between pledges from the same guest.
+- Guest "sign-in" is a name plus contact plus event code, not a verified identity. Verified login (e.g. SMS one-time codes) needs an SMS provider; see below.
+- In same-browser mode, guest details stay in that browser. Phone pledging across devices needs the venue sync server.
+
+## 7. Gift celebrations
 
 Every gift gets a moment on the live screen, sized to the gift:
 
@@ -175,7 +211,7 @@ Choose **Subtle / Standard / Festive** from the dashboard (*Live display control
 
 The effects run on a single lightweight canvas that is idle when nothing is animating.
 
-## 7. Accessibility & operator experience
+## 8. Accessibility & operator experience
 
 - The live display uses large type (the total is 210px on a 1080p canvas), high contrast on deep navy, and the `prefers-reduced-motion` setting. The **Calm motion** option does the same for the venue screen.
 - The dashboard has visible focus rings, labelled controls, ARIA live regions, native-`<dialog>` modals and a skip link.
@@ -184,8 +220,10 @@ The effects run on a single lightweight canvas that is idle when nothing is anim
 
 ---
 
-## 8. What still needs a real backend/service
+## 9. What still needs a real backend/service
 
+1. **Verified guest login.** Guests currently join with a name, contact details and the event code. For verified identities, add SMS or email one-time codes (e.g. Twilio or MessageBird) behind `/api/donor/join`.
+1. **Pledge fulfilment tracking.** Guests complete pledges on the donation website, which doesn't report back. Match payments to pledges through the payment platform or CRM (the pledger CSV has the contact details to reconcile against).
 1. **Authentication.** Replace the passcode gate with organisational SSO (e.g. Entra ID / Google Workspace) and per-user audit logs. `VITE_ADMIN_PASSCODE` is not security.
 2. **Hosted realtime database** (Supabase, Firebase, Ably…) to run across cities and networks with HTTPS, backups and history, by implementing `EventStore`.
 3. **Payment platform integration.** Online gifts made through the QR code don't appear automatically. A webhook from the donation platform should post a `donation/add` action with `source: 'online'` (amount and consented display name only).

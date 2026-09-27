@@ -1,5 +1,6 @@
-import type { AppState } from '../../types/index.ts';
+import type { AppState, DonorAccount, DonorSession } from '../../types/index.ts';
 import type { Action } from '../actions.ts';
+import type { JoinInput, JoinResult, PledgeResult } from '../pledging.ts';
 
 export type SyncMode = 'local' | 'server';
 
@@ -34,4 +35,16 @@ export interface EventStore {
   authorise(passcode: string): Promise<boolean>;
   /** Whether this device should run the demo clock (server mode: the server does). */
   runsDemoLocally: boolean;
+
+  // ── Guest pledging (public) ──
+  /** A guest joins the active event from their phone. */
+  joinAsDonor(input: JoinInput): Promise<JoinResult>;
+  /** A joined guest pledges an amount (optionally to the appeal level on screen). */
+  submitPledge(session: DonorSession, amount: number, levelId?: string): Promise<PledgeResult>;
+
+  // ── Operator only ──
+  /** Private pledger contact list for follow-up. */
+  listDonors(): Promise<DonorAccount[]>;
+  /** Suggested address for phones to reach this app (e.g. the venue server's LAN address). */
+  publicBaseUrl(): string | null;
 }
