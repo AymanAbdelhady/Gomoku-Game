@@ -81,6 +81,7 @@ export const SLIDES: LiveSlide[] = [
 ];
 
 export const DISPLAY: DisplayOptions = {
+  celebration: 'standard',
   showAmounts: true,
   showImpactOnGift: true,
   recognitionThreshold: 5_000,

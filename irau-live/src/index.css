@@ -173,3 +173,40 @@
   }
   .motion-decor { display: none !important; }
 }
+
+/* ───────────── Gift celebrations ───────────── */
+@keyframes gain-flare {
+  0% { opacity: 0; }
+  12% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes head-bump {
+  0% { transform: translate(-50%, -50%) scale(1); opacity: 0.95; }
+  100% { transform: translate(-50%, -50%) scale(3.4); opacity: 0; }
+}
+@keyframes float-up {
+  0% { transform: translate(-50%, 10px) scale(0.8); opacity: 0; }
+  14% { transform: translate(-50%, -34px) scale(1.08); opacity: 1; }
+  30% { transform: translate(-50%, -46px) scale(1); opacity: 1; }
+  100% { transform: translate(-50%, -120px) scale(1); opacity: 0; }
+}
+@keyframes flow {
+  from { background-position: 0 0; }
+  to { background-position: 208px 0; }
+}
+@keyframes count-pop {
+  0% { transform: scale(1); color: inherit; }
+  25% { transform: scale(1.18); color: var(--color-teal); }
+  100% { transform: scale(1); color: inherit; }
+}
+@keyframes bar-grow {
+  from { transform: scaleY(0.2); }
+  to { transform: scaleY(1); }
+}
+.anim-flow { animation: flow 6s linear infinite; }
+.anim-count-pop { animation: count-pop 1s var(--ease-calm) both; transform-origin: left bottom; display: inline-block; }
+@keyframes breathe-soft {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+  50% { box-shadow: 0 0 22px 2px rgba(255, 255, 255, 0.18); }
+}
+.anim-breathe-soft { animation: breathe-soft 3.2s ease-in-out infinite; }

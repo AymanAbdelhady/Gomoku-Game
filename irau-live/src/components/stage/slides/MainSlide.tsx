@@ -2,6 +2,8 @@ import type { StageData } from '../stageTypes';
 import { AnimatedAmount } from '../AnimatedAmount';
 import { ProgressTrack } from '../ProgressTrack';
 import { GivingFeed } from '../GivingFeed';
+import { MomentumMeter } from '../MomentumMeter';
+import { Pop } from '../Pop';
 import { GiftToast, GoldMotes } from '../GiftCelebration';
 import { QrCode } from '../../ui/QrCode';
 import { enabledMilestones, impactFor, qrTarget, recentDonations } from '../../../state/selectors';
@@ -32,13 +34,13 @@ export function MainSlide({ data }: { data: StageData }) {
 
         <div className="mt-[62px]">
           <p className="eyebrow text-[22px] text-teal">Raised tonight</p>
-          <div className="relative mt-3">
+          <Pop trigger={pulseKey} celebrate="total" className="relative mt-3">
             <AnimatedAmount
               value={totals.raised}
               reduced={reduced}
               className={cn('text-[210px] font-semibold tracking-[-0.035em] transition-colors duration-1000', gold ? 'text-[color-mix(in_oklab,var(--color-gold)_55%,white)]' : 'text-white', 'text-glow')}
             />
-          </div>
+          </Pop>
           <p className="mt-5 text-[34px] text-white/60">
             of <span className="tabular font-semibold text-white/90">{money(totals.target)}</span> target
           </p>
@@ -47,10 +49,13 @@ export function MainSlide({ data }: { data: StageData }) {
 
       {/* Stats, which make way for the gift acknowledgement while it is showing */}
       <div className={cn('absolute left-[120px] top-[800px] w-[1060px] transition-all duration-700', toastVisible ? 'translate-y-4 opacity-0' : 'opacity-100')}>
-        <div className="flex items-end gap-16">
+        <div className="flex items-end gap-14">
           <Stat value={percent(totals.progress)} label={exceeded ? 'Target reached' : 'Of target'} highlight={exceeded} />
-          <Stat value={formatNumber(donorsShown)} label={Math.round(donorsShown) === 1 ? 'Donor' : 'Donors'} />
+          <Pop trigger={pulseKey} scale={1.12}>
+            <Stat value={formatNumber(donorsShown)} label={Math.round(donorsShown) === 1 ? 'Donor' : 'Donors'} />
+          </Pop>
           {!exceeded && <Stat value={money(totals.remaining)} label="To go" />}
+          <MomentumMeter donations={event.donations} now={now} pulseKey={pulseKey} />
         </div>
       </div>
       <div className="absolute left-[1290px] top-[190px] w-[510px]">
@@ -81,7 +86,13 @@ export function MainSlide({ data }: { data: StageData }) {
       </div>
 
       <div className="absolute inset-x-[120px] bottom-[64px]">
-        <ProgressTrack raised={totals.raised} target={totals.target} milestones={enabledMilestones(event)} pulseKey={pulseKey} />
+        <ProgressTrack
+          raised={totals.raised}
+          target={totals.target}
+          milestones={enabledMilestones(event)}
+          pulseKey={pulseKey}
+          showNextMilestone
+        />
       </div>
     </div>
   );

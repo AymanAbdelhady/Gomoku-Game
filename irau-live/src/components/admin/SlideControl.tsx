@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import type { LiveSlide } from '../../types';
+import type { CelebrationLevel, LiveSlide } from '../../types';
 import { useActiveEvent, useDispatch } from '../../state/StoreContext';
 import { enabledMilestones, lastReachedMilestone, recentDonations } from '../../state/selectors';
 import { SLIDE_LABELS, SLIDE_ORDER } from '../../config/campaign';
 import { money } from '../../utils/format';
-import { Button, Card } from '../ui/primitives';
+import { Button, Card, Segmented } from '../ui/primitives';
 import { Icon, type IconName } from '../ui/Icon';
 import { cn } from '../../utils/cn';
 
@@ -90,6 +90,15 @@ export function SlideControl() {
           </div>
         )}
         <p className="text-[13px] text-slate-500">Milestones celebrate automatically when the total passes them.</p>
+        <div className="pt-1">
+          <p className="mb-1.5 text-sm font-semibold text-slate-700">Gift celebrations</p>
+          <Segmented<CelebrationLevel>
+            label="Gift celebrations"
+            value={event.display.celebration}
+            onChange={(celebration) => dispatch({ type: 'event/update', eventId: event.id, patch: { display: { ...event.display, celebration } } })}
+            options={[{ value: 'subtle', label: 'Subtle' }, { value: 'standard', label: 'Standard' }, { value: 'festive', label: 'Festive' }]}
+          />
+        </div>
       </div>
     </Card>
   );

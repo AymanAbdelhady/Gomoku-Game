@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import type { FundraisingEvent, GivingFrequency, RegionCode } from '../types';
+import type { CelebrationLevel, FundraisingEvent, GivingFrequency, RegionCode } from '../types';
 import type { Action } from '../state/actions';
 import { AdminShell } from '../components/admin/AdminShell';
 import { ColourSetting, MoneySetting, TextSetting } from '../components/admin/settingsFields';
@@ -146,6 +146,16 @@ export function Settings() {
               <Toggle checked={event.display.showAmounts} onChange={(v) => update({ display: { ...event.display, showAmounts: v } })} label="Show gift amounts" description="In the recent giving feed and donor wall." />
               <Toggle checked={event.display.showImpactOnGift} onChange={(v) => update({ display: { ...event.display, showImpactOnGift: v } })} label="Show impact line with new gifts" description="Only confirmed statements are shown." />
               <Toggle checked={event.display.cornerQr} onChange={(v) => update({ display: { ...event.display, cornerQr: v } })} label="QR code on the main screen" />
+              <div className="md:col-span-2">
+                <p className="mb-1.5 text-[15px] font-semibold text-slate-800">Gift celebrations</p>
+                <p className="mb-2 text-[13px] text-slate-500">Light that travels from each new gift into the bar, bursts of stars, and golden fireworks for major gifts. Bigger gifts get bigger moments.</p>
+                <Segmented<CelebrationLevel>
+                  label="Gift celebrations"
+                  value={event.display.celebration}
+                  onChange={(celebration) => update({ display: { ...event.display, celebration } })}
+                  options={[{ value: 'subtle', label: 'Subtle' }, { value: 'standard', label: 'Standard' }, { value: 'festive', label: 'Festive' }]}
+                />
+              </div>
               <Toggle checked={event.display.calmMotion} onChange={(v) => update({ display: { ...event.display, calmMotion: v } })} label="Calm motion" description="Minimal animation on the live display (also follows the device’s reduced-motion setting)." />
               <MoneySetting label="Automatic thank-you from" allowZero value={event.display.recognitionThreshold} onCommit={(recognitionThreshold) => update({ display: { ...event.display, recognitionThreshold } })} hint="Gifts at or above this pre-tick “Thank-you on screen”. 0 turns it off." />
               <MoneySetting label="Gold treatment from" allowZero value={event.display.goldThreshold} onCommit={(goldThreshold) => update({ display: { ...event.display, goldThreshold } })} hint="Gold is reserved for major gifts. 0 turns it off." />

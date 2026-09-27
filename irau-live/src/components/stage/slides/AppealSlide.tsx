@@ -28,6 +28,7 @@ export function AppealSlide({ data }: { data: StageData }) {
           </p>
         )}
         <p
+          data-celebrate="focus"
           className={cn('anim-rise tabular text-[250px] font-semibold leading-[1] tracking-[-0.04em]', gold ? 'text-gold' : 'text-white', 'text-glow')}
           style={{ animationDelay: '260ms' }}
         >

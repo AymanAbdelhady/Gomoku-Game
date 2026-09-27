@@ -37,6 +37,7 @@ export function GivingFeed({ donations, now, showAmounts, goldThreshold, rows = 
           return (
             <li
               key={d.id}
+              data-celebrate={i === 0 ? 'feed-top' : undefined}
               className={cn('-mx-6 flex items-center justify-between gap-6 rounded-2xl px-6', i === 0 && fresh && 'anim-feed-glow')}
               style={{ height: ROW_H, opacity: i === 0 && fresh ? undefined : 1 - i * 0.1 }}
             >

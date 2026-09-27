@@ -4,7 +4,7 @@
 
 Built for the *Gaza 3 Years On* touring events (VIC · NSW · QLD · WA · SA · ACT). The audience watches giving happen live on the venue screen. The fundraising team enters pledges called from the stage, runs giving-level appeals and switches slides from a tablet or laptop backstage.
 
-> **Prototype status.** A working product, but authentication is placeholder and there is no payment integration by design. See [What still needs a real backend](#7-what-still-needs-a-real-backendservice).
+> **Prototype status.** A working product, but authentication is placeholder and there is no payment integration by design. See [What still needs a real backend](#8-what-still-needs-a-real-backendservice).
 
 | Route | Who | What |
 |---|---|---|
@@ -154,7 +154,28 @@ Open `http://<laptop-ip>:8787/#/live` on the display machine and `…/#/admin` o
 
 ---
 
-## 6. Accessibility & operator experience
+## 6. Gift celebrations
+
+Every gift gets a moment on the live screen, sized to the gift:
+
+| Gift | What the audience sees |
+|---|---|
+| Any gift | A comet of light leaves the gift in the feed and arcs into the bar's leading edge. The bar surges forward (with a slight spring), the new segment flares, and the edge swells with a shock-wave ring and a burst of eight-point stars. The total and donor count pop, and the momentum meter's current-minute bar grows. |
+| $250+ | A bigger burst, plus sparkles rising along the newly filled part of the bar |
+| $1,000+ | Firework bursts in the sky, and teal and gold accents |
+| Gold threshold (default $5,000) and above | A golden comet, golden fireworks, a ring from the total, a warm glow and rising motes |
+| During an appeal | The appeal amount itself bursts as each pledge lands, and "+$amount" rises from the ribbon bar |
+
+The screen stays alive between gifts too:
+- The bar flows slowly.
+- The next milestone reads as a live countdown ("$100K · $15,275 to go").
+- A **momentum meter** shows gifts per minute over the last 12 minutes.
+
+Choose **Subtle / Standard / Festive** from the dashboard (*Live display control*) or in Settings → Display options. **Calm motion**, or the device's reduced-motion setting, turns the effects off.
+
+The effects run on a single lightweight canvas that is idle when nothing is animating.
+
+## 7. Accessibility & operator experience
 
 - The live display uses large type (the total is 210px on a 1080p canvas), high contrast on deep navy, and the `prefers-reduced-motion` setting. The **Calm motion** option does the same for the venue screen.
 - The dashboard has visible focus rings, labelled controls, ARIA live regions, native-`<dialog>` modals and a skip link.
@@ -163,7 +184,7 @@ Open `http://<laptop-ip>:8787/#/live` on the display machine and `…/#/admin` o
 
 ---
 
-## 7. What still needs a real backend/service
+## 8. What still needs a real backend/service
 
 1. **Authentication.** Replace the passcode gate with organisational SSO (e.g. Entra ID / Google Workspace) and per-user audit logs. `VITE_ADMIN_PASSCODE` is not security.
 2. **Hosted realtime database** (Supabase, Firebase, Ably…) to run across cities and networks with HTTPS, backups and history, by implementing `EventStore`.

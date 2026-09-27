@@ -93,7 +93,11 @@ export interface BrandColours {
   gold: string;
 }
 
+/** How big gift celebrations are on the live screen. */
+export type CelebrationLevel = 'subtle' | 'standard' | 'festive';
+
 export interface DisplayOptions {
+  celebration: CelebrationLevel;
   /** Show gift amounts next to names in the feed and donor wall. */
   showAmounts: boolean;
   /** Show the matching impact line under the total when a gift arrives. */

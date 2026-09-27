@@ -9,6 +9,7 @@ import { cn } from '../../utils/cn';
 import { StageHeader } from './StageHeader';
 import { OverlayView, useOverlayQueue } from './OverlayLayer';
 import { ConnectionNotice } from './ConnectionNotice';
+import { CelebrationLayer } from './celebration/CelebrationLayer';
 import { MainSlide } from './slides/MainSlide';
 import { AppealSlide } from './slides/AppealSlide';
 import { ImpactSlide } from './slides/ImpactSlide';
@@ -64,6 +65,7 @@ export function LiveStage({ event, status, preview = false }: { event: Fundraisi
           </div>
         );
       })}
+      <CelebrationLayer gift={gift} goldThreshold={event.display.goldThreshold} level={event.display.celebration} enabled={!reduced && !overlay} />
       {overlay && <OverlayView key={overlay.id} overlay={overlay} leaving={leaving} />}
       {status && !preview && <ConnectionNotice status={status} />}
     </div>
