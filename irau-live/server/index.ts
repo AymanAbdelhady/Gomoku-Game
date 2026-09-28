@@ -15,6 +15,8 @@
  *   POST /api/donor/join   guest joins from their phone (public, rate-limited)
  *   POST /api/pledge       joined guest pledges an amount (public, rate-limited)
  *   GET  /api/donors       PRIVATE pledger contact list for follow-up (header x-operator-key)
+ *   POST /api/assets       upload a logo { dataUrl } (header x-operator-key) → { name }
+ *   GET  /api/assets/:name serve an uploaded logo
  *
  * Pledger contact details are kept in server/data/donors.json and are never
  * part of the shared state that displays and phones receive.
@@ -45,6 +47,8 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = join(ROOT, 'dist');
 const DATA_FILE = join(ROOT, 'server', 'data', 'state.json');
 const DONORS_FILE = join(ROOT, 'server', 'data', 'donors.json');
+const ASSETS_DIR = join(ROOT, 'server', 'data', 'assets');
+const ASSET_TYPES: Record<string, string> = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp', 'image/gif': 'gif', 'image/svg+xml': 'svg' };
 const PORT = Number(process.env.PORT ?? 8787);
 const OPERATOR_KEY = process.env.SYNC_OPERATOR_KEY ?? 'gaza';
 
@@ -282,6 +286,33 @@ const server = createServer(async (req, res) => {
     if (path === '/api/donors' && req.method === 'GET') {
       if (!keyMatches(req.headers['x-operator-key'] as string | undefined)) return json(res, 401, { error: 'Operator passcode required' });
       return json(res, 200, [...donors.values()].map(({ tokenHash: _h, pledges: _p, lastPledgeAt: _l, ...d }) => d));
+    }
+
+    if (path === '/api/assets' && req.method === 'POST') {
+      if (!keyMatches(req.headers['x-operator-key'] as string | undefined)) return json(res, 401, { error: 'Operator passcode required' });
+      const { dataUrl } = await readJson<{ dataUrl?: string }>(req, 3_000_000);
+      const m = /^data:([a-z+/]+);base64,([A-Za-z0-9+/=]+)$/.exec(String(dataUrl ?? ''));
+      const ext = m ? ASSET_TYPES[m[1]] : undefined;
+      if (!m || !ext) return json(res, 400, { error: 'Please upload a PNG, JPG, WebP, GIF or SVG image.' });
+      const bytes = Buffer.from(m[2], 'base64');
+      if (bytes.length > 2_000_000) return json(res, 400, { error: 'That image is too large (2 MB max).' });
+      const name = `${createHash('sha256').update(bytes).digest('hex').slice(0, 24)}.${ext}`;
+      await mkdir(ASSETS_DIR, { recursive: true });
+      await writeFile(join(ASSETS_DIR, name), bytes);
+      return json(res, 200, { name });
+    }
+
+    const asset = /^\/api\/assets\/([a-f0-9]{24}\.(png|jpg|webp|gif|svg))$/.exec(path);
+    if (asset && req.method === 'GET') {
+      try {
+        const body = await readFile(join(ASSETS_DIR, asset[1]));
+        const type = Object.entries(ASSET_TYPES).find(([, e]) => e === asset[2])![0];
+        // Uploaded SVGs are only ever used as <img>; this CSP neuters any script if opened directly.
+        res.writeHead(200, { 'content-type': type, 'cache-control': 'public, max-age=31536000, immutable', 'content-security-policy': "default-src 'none'; style-src 'unsafe-inline'", 'x-content-type-options': 'nosniff' });
+        return res.end(body);
+      } catch {
+        return json(res, 404, { error: 'Not found' });
+      }
     }
 
     if (path.startsWith('/api/')) return json(res, 404, { error: 'Not found' });

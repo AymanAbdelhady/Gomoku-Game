@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { useActiveEvent, useAppState, useDispatch, useSyncStatus } from '../../state/StoreContext';
-import { Wordmark } from '../brand/Wordmark';
+import { BrandLogo } from '../brand/BrandLogo';
 import { Icon } from '../ui/Icon';
 import { cn } from '../../utils/cn';
 import { absoluteRoute, routeHref } from '../../utils/router';
@@ -28,7 +28,7 @@ export function AdminShell({ children, page }: { children: ReactNode; page: 'das
       <header className="sticky top-0 z-30 bg-navy text-white shadow-lg shadow-navy/20">
         <div className="mx-auto flex max-w-[1680px] flex-wrap items-center gap-x-5 gap-y-3 px-4 py-3 sm:px-6">
           <a href={routeHref('/admin')} className="mr-2 rounded-md">
-            <Wordmark organisation={event.organisation} size="sm" />
+            <BrandLogo event={event} height={28} />
           </a>
 
           <label className="flex items-center gap-2 rounded-xl bg-white/10 py-1 pl-3 pr-1 text-sm">

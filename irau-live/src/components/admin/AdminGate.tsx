@@ -1,6 +1,6 @@
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { useActiveEvent, useStore, useSyncStatus } from '../../state/StoreContext';
-import { Wordmark } from '../brand/Wordmark';
+import { BrandLogo } from '../brand/BrandLogo';
 import { GeometricPattern } from '../brand/GeometricPattern';
 import { Button, Input } from '../ui/primitives';
 import { Icon } from '../ui/Icon';
@@ -49,13 +49,13 @@ export function AdminGate({ children }: { children: ReactNode }) {
   };
 
   return (
-    <main className="relative grid min-h-dvh place-items-center overflow-hidden bg-[#081530] px-4 py-10 text-white">
+    <main className="relative grid min-h-dvh place-items-center overflow-hidden bg-ink px-4 py-10 text-white">
       <div className="stage-bg absolute inset-0" aria-hidden="true" />
       <div className="absolute inset-0 opacity-70" aria-hidden="true">
         <GeometricPattern opacity={0.06} />
       </div>
       <form onSubmit={submit} className="relative w-full max-w-md rounded-[28px] bg-white p-8 text-slate-ink shadow-2xl sm:p-10">
-        <Wordmark organisation={event.organisation} tone="dark" />
+        <BrandLogo event={event} height={40} tone="dark" />
         <h1 className="mt-8 font-display text-3xl font-[520]">Operator access</h1>
         <p className="mt-2 text-slate-600">
           {event.name}

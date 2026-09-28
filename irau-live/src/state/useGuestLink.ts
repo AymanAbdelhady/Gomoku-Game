@@ -1,17 +1,15 @@
 import type { FundraisingEvent } from '../types';
 import { useStore } from './StoreContext';
-import { qrTarget } from './selectors';
 
 /**
- * What the QR code on screen points to. With phone pledging on, it is this
- * app's guest page (with the event code pre-filled); otherwise the official
- * donation page.
+ * Where the QR code on screen points: this app's guest pledge page, with the
+ * event code pre-filled. Phones need an address they can reach, so on
+ * "localhost" the venue server's network address is used when known.
  */
-export function useGuestLink(event: FundraisingEvent): { url: string; pledging: boolean } {
+export function useGuestLink(event: FundraisingEvent): { url: string } {
   const store = useStore();
-  if (!event.pledging.enabled) return { url: qrTarget(event), pledging: false };
   const { origin, pathname, hostname } = window.location;
   const local = /^(localhost|127\.|\[::1\])/.test(hostname);
   const base = (event.pledging.publicUrl.trim() || (local && store.publicBaseUrl()) || `${origin}${pathname}`).replace(/#.*$/, '');
-  return { url: `${base}#/give?code=${encodeURIComponent(event.pledging.code)}`, pledging: true };
+  return { url: `${base}#/give?code=${encodeURIComponent(event.pledging.code)}` };
 }

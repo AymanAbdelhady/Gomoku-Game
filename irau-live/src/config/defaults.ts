@@ -1,5 +1,5 @@
 import type { AppState, FundraisingEvent, RegionCode } from '../types/index.ts';
-import { BRAND, CAMPAIGN, DISPLAY, GIVING_LEVELS, IMPACT_MESSAGES, MILESTONES, SLIDES } from './campaign.ts';
+import { APPEARANCE, ASSETS, BRAND, LAYOUT, CAMPAIGN, DISPLAY, GIVING_LEVELS, IMPACT_MESSAGES, MILESTONES, SLIDES } from './campaign.ts';
 import { REGIONS } from './locations.ts';
 import { uid } from '../utils/id.ts';
 
@@ -32,6 +32,9 @@ export function createEvent(region: RegionCode, overrides: Partial<FundraisingEv
     impactMessages: IMPACT_MESSAGES.map((m) => ({ ...m, id: uid('imp') })),
     slides: SLIDES.map((s) => ({ ...s })),
     brand: { ...BRAND },
+    assets: { ...ASSETS, partnerLogos: [] },
+    appearance: { ...APPEARANCE },
+    layout: { ...LAYOUT },
     display: { ...DISPLAY },
     pledging: { enabled: true, code: pledgeCode(), approval: 'auto', maxAmount: 100_000, publicUrl: '' },
     joinedCount: 0,

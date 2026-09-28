@@ -47,7 +47,7 @@ export function GivingFeed({ donations, now, showAmounts, goldThreshold, rows = 
                   {timeAgo(d.timestamp, now)}
                   {(d.source === 'app' || d.viaPhone) && (
                     <span className="flex items-center gap-1 text-teal/90">
-                      · <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2.5" /></svg> phone
+                      · <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><rect x="6.5" y="2" width="11" height="20" rx="2.5" /><path d="M10.5 18h3" /></svg> via phone
                     </span>
                   )}
                 </p>

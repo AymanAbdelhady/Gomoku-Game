@@ -60,7 +60,7 @@ export function OverlayView({ overlay, leaving }: { overlay: Overlay; leaving: b
       aria-live="assertive"
       className={cn('absolute inset-0 z-40 flex flex-col items-center justify-center text-center transition-opacity duration-700', leaving ? 'opacity-0' : 'anim-slide-in opacity-100')}
     >
-      <div className="absolute inset-0 bg-[#050d1f]/70" />
+      <div className="absolute inset-0 bg-ink/80" />
       <Rings gold={milestone} />
       <div className="relative flex flex-col items-center">
         {arabic && (

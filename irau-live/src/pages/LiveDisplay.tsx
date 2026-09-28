@@ -27,7 +27,7 @@ export function LiveDisplay() {
   }, [event.name]);
 
   return (
-    <main className={cn('fixed inset-0 bg-[#050d1f]', idle && 'cursor-none')} aria-label={`${event.name} live fundraising display`}>
+    <main className={cn('fixed inset-0 bg-[color-mix(in_oklab,var(--color-ink)_75%,black)]', idle && 'cursor-none')} aria-label={`${event.name} live fundraising display`}>
       <ScaledStage className="h-full w-full">
         <LiveStage event={event} status={status} />
       </ScaledStage>

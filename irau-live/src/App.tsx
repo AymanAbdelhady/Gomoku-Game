@@ -15,7 +15,7 @@ const AdminGate = lazy(() => import('./components/admin/AdminGate').then((m) => 
 export function App() {
   const route = useRoute();
   const event = useActiveEvent();
-  useBrandColours(event.brand);
+  useBrandColours(event.brand, event.appearance);
   // Donor phones never run the demo clock.
   const isPublicDonor = route === '/give';
   return (
@@ -47,7 +47,7 @@ function DemoClock() {
 
 export function Splash() {
   return (
-    <div className="fixed inset-0 grid place-items-center bg-[#081530]" role="status" aria-label="Loading">
+    <div className="fixed inset-0 grid place-items-center bg-ink" role="status" aria-label="Loading">
       <div className="h-10 w-10 animate-spin rounded-full border-2 border-white/15 border-t-white/80" />
     </div>
   );

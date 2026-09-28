@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useActiveEvent, useDispatch, useStore } from '../state/StoreContext';
 import { getTotals } from '../state/selectors';
-import { Wordmark } from '../components/brand/Wordmark';
+import { BrandLogo } from '../components/brand/BrandLogo';
 import { GeometricPattern } from '../components/brand/GeometricPattern';
 import { Icon, type IconName } from '../components/ui/Icon';
 import { money, percent } from '../utils/format';
@@ -32,13 +32,13 @@ export function Home() {
   };
 
   return (
-    <main className="relative min-h-dvh overflow-hidden bg-[#081530] text-white">
+    <main className="relative min-h-dvh overflow-hidden bg-ink text-white">
       <div className="stage-bg absolute inset-0" aria-hidden="true" />
       <div className="absolute inset-0 [mask-image:radial-gradient(900px_700px_at_80%_20%,black,transparent)]" aria-hidden="true">
         <GeometricPattern opacity={0.08} />
       </div>
       <div className="relative mx-auto flex min-h-dvh max-w-6xl flex-col px-5 py-8 sm:px-8 sm:py-12">
-        <Wordmark organisation={event.organisation} />
+        <BrandLogo event={event} height={36} />
         <div className="mt-16 max-w-3xl sm:mt-24">
           <p className="eyebrow text-xs text-teal sm:text-sm">Live fundraising · {event.city || event.region}</p>
           <h1 className="mt-4 font-display text-5xl font-[520] leading-[1.02] tracking-tight sm:text-7xl">{event.name}</h1>

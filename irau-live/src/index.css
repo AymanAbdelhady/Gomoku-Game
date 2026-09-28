@@ -64,7 +64,10 @@
   background:
     radial-gradient(1200px 800px at 12% -10%, color-mix(in oklab, var(--color-brand) 30%, transparent), transparent 70%),
     radial-gradient(900px 700px at 105% 110%, color-mix(in oklab, var(--color-teal) 16%, transparent), transparent 70%),
-    linear-gradient(160deg, color-mix(in oklab, var(--color-navy) 60%, var(--color-ink)) 0%, var(--color-ink) 55%, #050d1f 100%);
+    linear-gradient(160deg, color-mix(in oklab, var(--color-navy) 60%, var(--color-ink)) 0%, var(--color-ink) 55%, color-mix(in oklab, var(--color-ink) 70%, black) 100%);
+}
+.stage-bg-solid {
+  background: var(--color-ink);
 }
 
 .stage-grain {

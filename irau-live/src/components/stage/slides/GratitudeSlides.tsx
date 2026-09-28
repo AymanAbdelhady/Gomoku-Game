@@ -1,5 +1,6 @@
 import type { StageData } from '../stageTypes';
 import { AnimatedAmount } from '../AnimatedAmount';
+import { PartnerStrip } from '../../brand/BrandLogo';
 import { lastReachedMilestone } from '../../../state/selectors';
 import { publicText } from '../../../utils/content';
 import { formatNumber, money, percent } from '../../../utils/format';
@@ -38,6 +39,7 @@ export function ThankYouSlide({ data }: { data: StageData }) {
           <p className="eyebrow mt-3 text-[18px] text-white/55">Of {money(totals.target)}</p>
         </div>
       </div>
+      <PartnerStrip logos={event.assets.partnerLogos} size={52} className="anim-rise mt-14" />
       {quote && (
         <figure className="anim-rise mt-16 max-w-[1200px]" style={{ animationDelay: '520ms' }}>
           <blockquote className="font-display text-[32px] italic leading-snug text-white/75">{quote}</blockquote>

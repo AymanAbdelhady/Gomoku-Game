@@ -1,5 +1,6 @@
 import type { StageData } from '../stageTypes';
 import { TotalRibbon } from '../TotalRibbon';
+import { PartnerStrip } from '../../brand/BrandLogo';
 import { publicText } from '../../../utils/content';
 import { money } from '../../../utils/format';
 
@@ -51,6 +52,7 @@ export function ImpactSlide({ data }: { data: StageData }) {
           </p>
         )}
       </div>
+      <PartnerStrip logos={event.assets.partnerLogos} size={48} label="With" className="absolute right-[120px] top-[176px]" />
       <TotalRibbon data={data} />
     </div>
   );

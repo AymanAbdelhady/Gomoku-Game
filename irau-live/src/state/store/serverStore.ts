@@ -109,6 +109,19 @@ export class ServerEventStore implements EventStore {
 
   publicBaseUrl = () => this.lanUrl;
 
+  /** Uploads to the sync server so the shared state carries a short URL, not the image. */
+  storeAsset = async (dataUrl: string) => {
+    const res = await fetch(`${this.baseUrl}/assets`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-operator-key': sessionStorage.getItem(KEY_SESSION) ?? '' },
+      body: JSON.stringify({ dataUrl }),
+    });
+    if (res.status === 401) throw new Error('Unlock the dashboard with the operator passcode to upload.');
+    if (!res.ok) throw new Error(((await res.json().catch(() => ({}))) as { error?: string }).error ?? 'Upload failed.');
+    const { name } = (await res.json()) as { name: string };
+    return `${this.baseUrl}/assets/${name}`;
+  };
+
   /** Set from the server's health probe: an address other devices on the network can use. */
   lanUrl: string | null = null;
 

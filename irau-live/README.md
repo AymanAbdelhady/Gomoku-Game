@@ -190,6 +190,22 @@ The evening runs on **pledges**: promises to give that guests complete afterward
 - Guest "sign-in" is a name plus contact plus event code, not a verified identity. Verified login (e.g. SMS one-time codes) needs an SMS provider; see below.
 - In same-browser mode, guest details stay in that browser. Phone pledging across devices needs the venue sync server.
 
+## 6a. Appearance, logos and layout
+
+**Settings → Appearance & logos**
+- Upload your **main logo**, shown on the big screen, the guest page and the operator screens. Show it in its own colours or knocked out to white, adjust its size, and choose whether the organisation name appears beside it.
+- Upload up to four **partner logos**, shown on white plates on the impact, QR and thank-you slides.
+- **Colours:** start from a preset (Islamic Relief, Midnight, Olive, Dusk), then fine-tune the background, primary, accent, deep tone and gold. A contrast check warns if the background is too light for white text on a projector.
+- **Background and type:** soft-light or solid background, the geometric pattern on or off, and an elegant serif or clean sans for headings.
+
+**Settings → Live screen layout**
+- Presets: **Focused** (the calm default), **Standard** and **Detailed**.
+- Individual switches for the title, supporting line, number of recent pledges, QR panel, milestone countdown and labels, pledges-per-minute meter, and city/venue.
+
+On wide monitors, a live preview stays in view beside Settings while you edit.
+
+Logos are resized in the browser before upload. On the venue server they are stored as files in `server/data/assets/`, so the shared state stays small; in same-browser mode they are kept inline.
+
 ## 7. Gift celebrations
 
 Every gift gets a moment on the live screen, sized to the gift:

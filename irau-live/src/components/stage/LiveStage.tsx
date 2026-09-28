@@ -61,7 +61,7 @@ export function LiveStage({ event: live, status, preview = false }: { event: Fun
 
   return (
     <div className="relative h-full w-full select-none overflow-hidden font-sans text-white" data-motion={reduced ? 'reduced' : 'full'}>
-      <StageBackground warm={warm || overlay?.kind === 'milestone'} />
+      <StageBackground warm={warm || overlay?.kind === 'milestone'} solid={event.appearance.backgroundStyle === 'solid'} pattern={event.appearance.pattern} />
       <StageHeader event={event} />
       {transitions.map(({ id, leaving: out }) => {
         const Slide = SLIDES[id];

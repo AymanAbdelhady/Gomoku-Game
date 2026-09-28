@@ -103,7 +103,7 @@ export function PledgePanel({ event, session, mine, remember, signOut }: Props) 
       {paused && <p className="rounded-2xl bg-amber-50 px-4 py-3 text-[15px] text-amber-900">Pledges are paused for a moment. Please stay with us.</p>}
 
       {level && !paused && (
-        <section className="anim-rise relative overflow-hidden rounded-3xl bg-[#081530] p-6 text-white shadow-xl shadow-navy/20" aria-label="Appeal on stage now">
+        <section className="anim-rise relative overflow-hidden rounded-3xl bg-ink p-6 text-white shadow-xl shadow-navy/20" aria-label="Appeal on stage now">
           <div className="stage-bg absolute inset-0" aria-hidden="true" />
           <div className="relative">
             <p className="eyebrow flex items-center gap-2 text-[11px] text-teal">

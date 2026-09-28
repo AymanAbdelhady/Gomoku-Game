@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import type { CelebrationLevel, FundraisingEvent, GivingFrequency, RegionCode } from '../types';
+import type { CelebrationLevel, FundraisingEvent, GivingFrequency, LayoutPreset, RegionCode } from '../types';
 import type { Action } from '../state/actions';
 import { AdminShell } from '../components/admin/AdminShell';
 import { ColourSetting, MoneySetting, TextSetting } from '../components/admin/settingsFields';
@@ -7,11 +7,14 @@ import { Badge, Button, Card, Dialog, Segmented, Toggle } from '../components/ui
 import { Icon } from '../components/ui/Icon';
 import { QrCode } from '../components/ui/QrCode';
 import { useActiveEvent, useAppState, useDispatch } from '../state/StoreContext';
-import { getTotals, qrTarget } from '../state/selectors';
+import { getTotals } from '../state/selectors';
 import { normaliseState } from '../state/store/persistence';
 import { REGIONS, regionLabel } from '../config/locations';
-import { BRAND, PLACEHOLDER, SLIDE_LABELS, SLIDE_ORDER } from '../config/campaign';
+import { APPEARANCE, BRAND, COLOUR_PRESETS, LAYOUT_PRESETS, PLACEHOLDER, SLIDE_LABELS, SLIDE_ORDER } from '../config/campaign';
 import { createEvent, pledgeCode } from '../config/defaults';
+import { StagePreview } from '../components/admin/StagePreview';
+import { LogoField } from '../components/admin/LogoField';
+import { whiteContrast } from '../state/useBrandColours';
 import { useStore } from '../state/StoreContext';
 import { useGuestLink } from '../state/useGuestLink';
 import type { DonorAccount } from '../types';
@@ -23,18 +26,19 @@ import { cn } from '../utils/cn';
 type EventPatch = Extract<Action, { type: 'event/update' }>['patch'];
 
 const SECTIONS = [
+  ['appearance', 'Appearance & logos'],
+  ['layout', 'Live screen layout'],
   ['event', 'Event details'],
   ['locations', 'Cities & events'],
   ['fundraising', 'Target & totals'],
   ['pledging', 'Phone pledging'],
   ['pledgers', 'Pledgers (private)'],
-  ['donate', 'Donation link & QR'],
+  ['donate', 'Pledge completion page'],
   ['levels', 'Giving levels'],
   ['milestones', 'Milestones'],
   ['impact', 'Impact statements'],
   ['slides', 'Live slides'],
   ['display', 'Display options'],
-  ['brand', 'Brand colours'],
   ['data', 'Pledges & data'],
 ] as const;
 
@@ -51,7 +55,7 @@ export function Settings() {
 
   return (
     <AdminShell page="settings">
-      <div className="grid gap-8 lg:grid-cols-[220px_minmax(0,1fr)]">
+      <div className="grid gap-8 lg:grid-cols-[220px_minmax(0,1fr)] 2xl:grid-cols-[220px_minmax(0,1fr)_520px]">
         <nav aria-label="Settings sections" className="lg:sticky lg:top-24 lg:self-start">
           <h1 className="mb-4 font-display text-3xl font-[520] text-navy">Settings</h1>
           <p className="mb-4 text-sm text-slate-500">
@@ -77,6 +81,9 @@ export function Settings() {
               </p>
             </div>
           )}
+
+          <AppearanceSection event={event} />
+          <LayoutSection event={event} />
 
           <Section id="event" title="Event details" description="What the audience reads on every screen.">
             <div className="grid gap-5 md:grid-cols-2">
@@ -119,29 +126,18 @@ export function Settings() {
           <PledgingSection event={event} />
           <PledgersSection event={event} />
 
-          <Section id="donate" title="Donation link & QR code" description="Where guests complete their pledges (the “Complete my pledge” and “Donate” buttons).">
-            <div className="grid gap-6 md:grid-cols-[1fr_auto]">
-              <div className="space-y-5">
-                <TextSetting
-                  label="Donation URL"
-                  type="url"
-                  value={event.donationUrl}
-                  onCommit={(donationUrl) => update({ donationUrl: donationUrl.trim() })}
-                  hint={<>The official donation page. Optional tokens <code>{'{amount}'}</code> and <code>{'{frequency}'}</code> are filled in from the guest page if your platform supports pre-filled amounts.</>}
-                />
-                <TextSetting label="QR code URL (optional)" type="url" value={event.qrUrl} placeholder="Leave blank to use the donation URL" onCommit={(qrUrl) => update({ qrUrl: qrUrl.trim() })} hint="e.g. a campaign link with tracking, or this app’s /#/give page when hosted publicly." />
-                <TextSetting label="Label under the QR code" value={event.qrLabel} onCommit={(qrLabel) => update({ qrLabel })} />
-                {!/^https:\/\//i.test(qrTarget(event)) && <p className="rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900">The QR link should start with https:// so phones open it securely.</p>}
-              </div>
-              <div className="text-center">
-                <div className="inline-block rounded-2xl bg-white p-3 ring-1 ring-slate-200">
-                  {qrTarget(event) ? <QrCode value={qrTarget(event)} size={176} /> : <div className="grid h-44 w-44 place-items-center text-sm text-slate-400">No URL</div>}
-                </div>
-                <a href={qrTarget(event)} target="_blank" rel="noreferrer" className="mt-2 flex items-center justify-center gap-1 text-sm font-semibold text-brand hover:underline">
-                  Test link <Icon name="external" className="h-4 w-4" />
-                </a>
-              </div>
-            </div>
+          <Section id="donate" title="Pledge completion page" description="Where guests go to complete (pay) their pledge — the “Complete my pledge” buttons on the guest page. The QR code on screen always opens the pledge page.">
+            <TextSetting
+              label="Pledge completion page"
+              type="url"
+              value={event.donationUrl}
+              onCommit={(donationUrl) => update({ donationUrl: donationUrl.trim() })}
+              hint={<>The official Islamic Relief Australia page. Optional tokens <code>{'{amount}'}</code> and <code>{'{frequency}'}</code> are filled in with the guest’s pledge if your platform supports pre-filled amounts.</>}
+            />
+            {!/^https:\/\//i.test(event.donationUrl) && <p className="mt-3 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900">This link should start with https:// so phones open it securely.</p>}
+            <a href={event.donationUrl} target="_blank" rel="noreferrer" className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-brand hover:underline">
+              Test link <Icon name="external" className="h-4 w-4" />
+            </a>
           </Section>
 
           <LevelsSection event={event} />
@@ -170,17 +166,16 @@ export function Settings() {
             </div>
           </Section>
 
-          <Section id="brand" title="Brand colours" actions={<Button size="sm" onClick={() => update({ brand: { ...BRAND } })}>Reset to Islamic Relief</Button>}>
-            <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
-              <ColourSetting label="Primary (Islamic Relief blue)" value={event.brand.primary} onCommit={(primary) => update({ brand: { ...event.brand, primary } })} />
-              <ColourSetting label="Navy" value={event.brand.navy} onCommit={(navy) => update({ brand: { ...event.brand, navy } })} />
-              <ColourSetting label="Teal" value={event.brand.teal} onCommit={(teal) => update({ brand: { ...event.brand, teal } })} />
-              <ColourSetting label="Gold (major pledges)" value={event.brand.gold} onCommit={(gold) => update({ brand: { ...event.brand, gold } })} />
-            </div>
-          </Section>
-
           <DataSection event={event} />
         </div>
+
+        <aside className="hidden 2xl:block" aria-label="Live screen preview">
+          <div className="sticky top-24">
+            <p className="eyebrow mb-2 text-[11px] text-slate-500">Live screen preview</p>
+            <StagePreview />
+            <p className="mt-3 text-[13px] leading-snug text-slate-500">Changes appear on the big screen as you make them.</p>
+          </div>
+        </aside>
       </div>
     </AdminShell>
   );
@@ -378,6 +373,9 @@ function LocationsSection() {
           impactMessages: active.impactMessages.map((m) => ({ ...m, id: uid('imp') })),
           slides: active.slides.map((s) => ({ ...s })),
           brand: { ...active.brand },
+          assets: { ...active.assets, partnerLogos: [...active.assets.partnerLogos] },
+          appearance: { ...active.appearance },
+          layout: { ...active.layout },
           display: { ...active.display },
         }
       : base;
@@ -536,7 +534,7 @@ function PledgingSection({ event }: { event: FundraisingEvent }) {
     <Section id="pledging" title="Phone pledging" description="Guests scan the QR code, join with their first name and a mobile or email, and pledge from their seat. Their pledges arrive on the big screen.">
       <div className="grid gap-6 md:grid-cols-[1fr_auto]">
         <div className="space-y-5">
-          <Toggle checked={p.enabled} onChange={(enabled) => set({ enabled })} label="Allow pledges from phones" description="When off, the QR code goes straight to the donation page instead." />
+          <Toggle checked={p.enabled} onChange={(enabled) => set({ enabled })} label="Accept pledges from phones" description="Turn off to pause phone pledging; guests will see that pledging opens soon." />
           <div>
             <p className="mb-1.5 text-sm font-semibold text-slate-700">Event code</p>
             <div className="flex items-center gap-3">
@@ -653,6 +651,151 @@ function PledgersSection({ event }: { event: FundraisingEvent }) {
           </table>
         </div>
       )}
+    </Section>
+  );
+}
+
+function AppearanceSection({ event }: { event: FundraisingEvent }) {
+  const dispatch = useDispatch();
+  const update = (patch: EventPatch) => dispatch({ type: 'event/update', eventId: event.id, patch });
+  const { brand, assets, appearance } = event;
+  const setAssets = (patch: Partial<FundraisingEvent['assets']>) => update({ assets: { ...assets, ...patch } });
+  const setAppearance = (patch: Partial<FundraisingEvent['appearance']>) => update({ appearance: { ...appearance, ...patch } });
+  const contrast = whiteContrast(brand.background);
+  const activePreset = COLOUR_PRESETS.find((p) => (Object.keys(p.colours) as (keyof typeof brand)[]).every((k) => p.colours[k].toLowerCase() === brand[k]?.toLowerCase()));
+
+  return (
+    <Section id="appearance" title="Appearance & logos" description="Your logo, partner logos, colours and type — applied to the big screen, the guest page and these operator screens.">
+      <div className="mb-6 2xl:hidden">
+        <StagePreview />
+      </div>
+
+      <h3 className="text-[15px] font-semibold text-slate-800">Logo</h3>
+      <div className="mt-3 grid gap-6 md:grid-cols-2">
+        <LogoField label="Main logo" value={assets.logo} onChange={(logo) => setAssets({ logo })} knockout={assets.logoStyle === 'white'} hint="PNG with a transparent background, or SVG. Without a logo, the organisation name is shown as text." />
+        <div className="space-y-5">
+          <div>
+            <p className="mb-1.5 text-sm font-semibold text-slate-700">On the dark stage, show the logo</p>
+            <Segmented<'original' | 'white'> label="Logo colours" value={assets.logoStyle} onChange={(logoStyle) => setAssets({ logoStyle })} options={[{ value: 'original', label: 'In its colours' }, { value: 'white', label: 'In white' }]} />
+          </div>
+          <div>
+            <label htmlFor="logo-size" className="mb-1.5 flex justify-between text-sm font-semibold text-slate-700">
+              Logo size on screen <span className="tabular font-normal text-slate-500">{assets.logoHeight}px</span>
+            </label>
+            <input id="logo-size" type="range" min={32} max={96} step={4} value={assets.logoHeight} onChange={(e) => setAssets({ logoHeight: Number(e.target.value) })} className="w-full accent-[var(--color-brand)]" />
+          </div>
+          <Toggle checked={assets.showOrgName} onChange={(showOrgName) => setAssets({ showOrgName })} label="Show the organisation name beside the logo" description="Turn off if the name is already part of your logo." />
+        </div>
+      </div>
+
+      <h3 className="mt-8 text-[15px] font-semibold text-slate-800">Partner logos</h3>
+      <p className="mt-1 text-[13px] text-slate-500">Shown on white plates on the impact, QR and thank-you slides (up to four).</p>
+      <div className="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {assets.partnerLogos.map((src, i) => (
+          <LogoField key={i} label={`Partner ${i + 1}`} value={src} plate onChange={(v) => setAssets({ partnerLogos: v ? assets.partnerLogos.map((x, j) => (j === i ? v : x)) : assets.partnerLogos.filter((_, j) => j !== i) })} />
+        ))}
+        {assets.partnerLogos.length < 4 && <LogoField label="Add a partner" value="" plate onChange={(v) => v && setAssets({ partnerLogos: [...assets.partnerLogos, v] })} />}
+      </div>
+
+      <h3 className="mt-8 text-[15px] font-semibold text-slate-800">Colours</h3>
+      <div className="mt-3 flex flex-wrap gap-2">
+        {COLOUR_PRESETS.map((p) => (
+          <button
+            key={p.id}
+            onClick={() => update({ brand: { ...p.colours } })}
+            aria-pressed={activePreset?.id === p.id}
+            className={cn('flex items-center gap-3 rounded-2xl py-2 pl-2 pr-4 text-sm font-semibold ring-1 transition', activePreset?.id === p.id ? 'bg-navy text-white ring-navy' : 'bg-white text-slate-700 ring-slate-200 hover:ring-slate-400')}
+          >
+            <span className="flex h-9 w-14 overflow-hidden rounded-lg ring-1 ring-black/10" aria-hidden="true">
+              <span className="flex-[2]" style={{ background: p.colours.background }} />
+              <span className="flex-1" style={{ background: p.colours.primary }} />
+              <span className="flex-1" style={{ background: p.colours.teal }} />
+              <span className="flex-1" style={{ background: p.colours.gold }} />
+            </span>
+            {p.label}
+          </button>
+        ))}
+      </div>
+      <div className="mt-5 grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+        <ColourSetting label="Background (live screen)" value={brand.background} onCommit={(background) => update({ brand: { ...brand, background } })} />
+        <ColourSetting label="Primary — bar & buttons" value={brand.primary} onCommit={(primary) => update({ brand: { ...brand, primary } })} />
+        <ColourSetting label="Accent — labels & highlights" value={brand.teal} onCommit={(teal) => update({ brand: { ...brand, teal } })} />
+        <ColourSetting label="Deep tone — gradients & panels" value={brand.navy} onCommit={(navy) => update({ brand: { ...brand, navy } })} />
+        <ColourSetting label="Gold — major pledges" value={brand.gold} onCommit={(gold) => update({ brand: { ...brand, gold } })} />
+      </div>
+      <p className={cn('mt-4 rounded-xl px-4 py-3 text-sm', contrast >= 7 ? 'bg-emerald-50 text-emerald-900' : contrast >= 4.5 ? 'bg-amber-50 text-amber-900' : 'bg-red-50 text-red-800')}>
+        White text on this background: contrast {contrast.toFixed(1)}:1 —{' '}
+        {contrast >= 7 ? 'excellent for a projector.' : contrast >= 4.5 ? 'readable, but a darker background will hold up better on a projector.' : 'too low. Choose a darker background so the audience can read the screen.'}
+      </p>
+
+      <h3 className="mt-8 text-[15px] font-semibold text-slate-800">Background & type</h3>
+      <div className="mt-3 grid gap-5 md:grid-cols-3">
+        <div>
+          <p className="mb-1.5 text-sm font-semibold text-slate-700">Background</p>
+          <Segmented<'gradient' | 'solid'> label="Background style" value={appearance.backgroundStyle} onChange={(backgroundStyle) => setAppearance({ backgroundStyle })} options={[{ value: 'gradient', label: 'Soft light' }, { value: 'solid', label: 'Solid' }]} />
+        </div>
+        <div>
+          <p className="mb-1.5 text-sm font-semibold text-slate-700">Headings</p>
+          <Segmented<'serif' | 'sans'> label="Heading font" value={appearance.headingFont} onChange={(headingFont) => setAppearance({ headingFont })} options={[{ value: 'serif', label: 'Elegant serif' }, { value: 'sans', label: 'Clean sans' }]} />
+        </div>
+        <div className="pt-1">
+          <Toggle checked={appearance.pattern} onChange={(pattern) => setAppearance({ pattern })} label="Geometric pattern" description="Faint eight-point star lattice." />
+        </div>
+      </div>
+      <div className="mt-6">
+        <Button size="sm" onClick={() => update({ brand: { ...BRAND }, appearance: { ...APPEARANCE } })}>Reset colours & type</Button>
+      </div>
+    </Section>
+  );
+}
+
+function LayoutSection({ event }: { event: FundraisingEvent }) {
+  const dispatch = useDispatch();
+  const layout = event.layout;
+  const set = (patch: Partial<FundraisingEvent['layout']>) => dispatch({ type: 'event/update', eventId: event.id, patch: { layout: { ...layout, ...patch, preset: 'custom' } } });
+  const applyPreset = (preset: Exclude<LayoutPreset, 'custom'>) => dispatch({ type: 'event/update', eventId: event.id, patch: { layout: { preset, ...LAYOUT_PRESETS[preset] } } });
+  const presets: { id: Exclude<LayoutPreset, 'custom'>; label: string; text: string }[] = [
+    { id: 'focused', label: 'Focused', text: 'Total, a few recent pledges and the QR code. Calm and readable from the back.' },
+    { id: 'standard', label: 'Standard', text: 'Adds the supporting line and one more recent pledge.' },
+    { id: 'detailed', label: 'Detailed', text: 'Everything, including the pledges-per-minute meter.' },
+  ];
+
+  return (
+    <Section id="layout" title="Live screen layout" description="Choose how much the main live screen shows. The pledge total, progress bar and pledge celebrations are always on.">
+      <div className="grid gap-3 md:grid-cols-3">
+        {presets.map((p) => (
+          <button
+            key={p.id}
+            onClick={() => applyPreset(p.id)}
+            aria-pressed={layout.preset === p.id}
+            className={cn('rounded-2xl p-4 text-left ring-1 transition', layout.preset === p.id ? 'bg-navy text-white ring-navy' : 'bg-white ring-slate-200 hover:ring-slate-400')}
+          >
+            <span className="block text-[15px] font-semibold">{p.label}</span>
+            <span className={cn('mt-1 block text-[13px] leading-snug', layout.preset === p.id ? 'text-white/75' : 'text-slate-500')}>{p.text}</span>
+          </button>
+        ))}
+      </div>
+      {layout.preset === 'custom' && <p className="mt-3 text-[13px] text-slate-500">Custom layout — pick a preset to reset.</p>}
+
+      <div className="mt-6 grid gap-5 md:grid-cols-2">
+        <Toggle checked={layout.showTitle} onChange={(showTitle) => set({ showTitle })} label="Event title" />
+        <Toggle checked={layout.showSubtitle} onChange={(showSubtitle) => set({ showSubtitle })} label="Supporting line" />
+        <Toggle checked={layout.showQrPanel} onChange={(showQrPanel) => set({ showQrPanel })} label="QR code & event code" description="How guests join to pledge from their phones." />
+        <Toggle checked={layout.showCountdown} onChange={(showCountdown) => set({ showCountdown })} label="Next milestone countdown" />
+        <Toggle checked={layout.showMilestoneLabels} onChange={(showMilestoneLabels) => set({ showMilestoneLabels })} label="Milestone amounts under the bar" />
+        <Toggle checked={layout.showMomentum} onChange={(showMomentum) => set({ showMomentum })} label="Pledges-per-minute meter" />
+        <Toggle checked={layout.showLocation} onChange={(showLocation) => set({ showLocation })} label="City & venue in the header" />
+        <div>
+          <p className="mb-1.5 text-[15px] font-semibold text-slate-800">Recent pledges beside the total</p>
+          <Segmented<string>
+            label="Recent pledges"
+            value={String(layout.feedRows)}
+            onChange={(v) => set({ feedRows: Number(v) })}
+            options={[{ value: '0', label: 'Off' }, { value: '3', label: '3' }, { value: '4', label: '4' }, { value: '5', label: '5' }]}
+          />
+          {layout.feedRows > 4 && layout.showQrPanel && <p className="mt-1.5 text-[13px] text-slate-500">Up to 4 fit alongside the QR code.</p>}
+        </div>
+      </div>
     </Section>
   );
 }

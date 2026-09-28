@@ -123,6 +123,9 @@ export class LocalEventStore implements EventStore {
 
   publicBaseUrl = () => null;
 
+  /** Same-browser mode keeps logos inline in the event settings (they are resized to stay small). */
+  storeAsset = async (dataUrl: string) => dataUrl;
+
   private receive(incoming: AppState) {
     if (incoming.rev <= this.state.rev) return;
     this.state = normaliseState(incoming);

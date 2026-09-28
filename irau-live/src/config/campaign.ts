@@ -1,10 +1,14 @@
 import type {
+  Appearance,
+  BrandAssets,
   BrandColours,
   DisplayOptions,
   GivingLevel,
   ImpactMessage,
+  LayoutPreset,
   LiveSlide,
   Milestone,
+  StageLayout,
 } from '../types/index.ts';
 
 /**
@@ -36,7 +40,29 @@ export const BRAND: BrandColours = {
   navy: '#223A7B',
   teal: '#66B3BC',
   gold: '#C9A45C',
+  background: '#081530',
 };
+
+/** Ready-made colour sets. Backgrounds stay dark so white stage text keeps its contrast. */
+export const COLOUR_PRESETS: { id: string; label: string; colours: BrandColours }[] = [
+  { id: 'ir', label: 'Islamic Relief', colours: BRAND },
+  { id: 'midnight', label: 'Midnight', colours: { primary: '#3D8BFD', navy: '#1B2A4A', teal: '#8FD3E8', gold: '#D4B26A', background: '#05080F' } },
+  { id: 'olive', label: 'Olive', colours: { primary: '#2F9E6B', navy: '#1F3B2E', teal: '#9BD1B0', gold: '#D8B45C', background: '#08140F' } },
+  { id: 'dusk', label: 'Dusk', colours: { primary: '#7C6FD6', navy: '#2B2356', teal: '#B9A7F0', gold: '#E0B86A', background: '#0D0A1C' } },
+];
+
+export const ASSETS: BrandAssets = { logo: '', logoStyle: 'original', logoHeight: 56, showOrgName: true, partnerLogos: [] };
+
+export const APPEARANCE: Appearance = { headingFont: 'serif', backgroundStyle: 'gradient', pattern: true };
+
+/** Layout presets for the main live screen. "Focused" is the calm default. */
+export const LAYOUT_PRESETS: Record<Exclude<LayoutPreset, 'custom'>, Omit<StageLayout, 'preset'>> = {
+  focused: { showTitle: true, showSubtitle: false, feedRows: 3, showQrPanel: true, showMilestoneLabels: true, showCountdown: true, showMomentum: false, showLocation: true },
+  standard: { showTitle: true, showSubtitle: true, feedRows: 4, showQrPanel: true, showMilestoneLabels: true, showCountdown: true, showMomentum: false, showLocation: true },
+  detailed: { showTitle: true, showSubtitle: true, feedRows: 5, showQrPanel: true, showMilestoneLabels: true, showCountdown: true, showMomentum: true, showLocation: true },
+};
+
+export const LAYOUT: StageLayout = { preset: 'focused', ...LAYOUT_PRESETS.focused };
 
 export const GIVING_LEVELS: Omit<GivingLevel, 'id'>[] = [
   { amount: 10_000, impact: PLACEHOLDER, enabled: true },

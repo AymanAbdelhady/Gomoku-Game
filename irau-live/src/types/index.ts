@@ -145,6 +145,47 @@ export interface BrandColours {
   navy: string;
   teal: string;
   gold: string;
+  /** Live screen background (should be dark — text on the stage is white). */
+  background: string;
+}
+
+/** Logos, stored as small data URLs (same-browser mode) or server asset URLs. */
+export interface BrandAssets {
+  /** Main logo in the live screen header, guest page and operator screens. '' = text wordmark. */
+  logo: string;
+  /** Show the logo in its original colours, or knocked out to white for dark backgrounds. */
+  logoStyle: 'original' | 'white';
+  /** Logo height on the 1080p stage, in pixels. */
+  logoHeight: number;
+  /** Also show the organisation name as text next to the logo. */
+  showOrgName: boolean;
+  /** Partner / sponsor logos (e.g. PANZMA), shown on the impact, QR and thank-you slides. */
+  partnerLogos: string[];
+}
+
+export interface Appearance {
+  headingFont: 'serif' | 'sans';
+  backgroundStyle: 'gradient' | 'solid';
+  /** Faint geometric pattern behind the stage. */
+  pattern: boolean;
+}
+
+export type LayoutPreset = 'focused' | 'standard' | 'detailed' | 'custom';
+
+/** Which elements the main live screen shows. Fewer = calmer. */
+export interface StageLayout {
+  preset: LayoutPreset;
+  showTitle: boolean;
+  showSubtitle: boolean;
+  /** Recent pledges beside the total (0 hides the list). */
+  feedRows: number;
+  showQrPanel: boolean;
+  showMilestoneLabels: boolean;
+  /** "Next milestone $100K · $15,275 to go" under the total between pledges. */
+  showCountdown: boolean;
+  /** Pledges-per-minute meter. */
+  showMomentum: boolean;
+  showLocation: boolean;
 }
 
 /** How big gift celebrations are on the live screen. */
@@ -228,6 +269,9 @@ export interface FundraisingEvent {
   impactMessages: ImpactMessage[];
   slides: LiveSlide[];
   brand: BrandColours;
+  assets: BrandAssets;
+  appearance: Appearance;
+  layout: StageLayout;
   display: DisplayOptions;
 
   pledging: PledgeSettings;

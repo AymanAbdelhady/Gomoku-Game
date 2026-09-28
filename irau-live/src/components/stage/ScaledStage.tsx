@@ -29,7 +29,7 @@ export function ScaledStage({ children, className }: { children: ReactNode; clas
   }, []);
 
   return (
-    <div ref={ref} className={cn('relative overflow-hidden bg-[#050d1f]', className)}>
+    <div ref={ref} className={cn('relative overflow-hidden bg-[color-mix(in_oklab,var(--color-ink)_75%,black)]', className)}>
       <div
         className="absolute left-0 top-0"
         style={{ width: STAGE_W, height: STAGE_H, transform: `translate(${box.x}px, ${box.y}px) scale(${box.s})`, transformOrigin: '0 0', visibility: box.s ? 'visible' : 'hidden' }}

@@ -47,4 +47,6 @@ export interface EventStore {
   listDonors(): Promise<DonorAccount[]>;
   /** Suggested address for phones to reach this app (e.g. the venue server's LAN address). */
   publicBaseUrl(): string | null;
+  /** Stores a prepared image (data URL) and returns the URL to reference it by. */
+  storeAsset(dataUrl: string): Promise<string>;
 }
