@@ -1,0 +1,220 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/fraunces';
+@import '@fontsource/amiri/arabic-400.css';
+
+/*
+ * Design tokens. Brand colours are overridden at runtime from event settings
+ * (see useBrandColours), so every utility that uses them follows the admin.
+ */
+@theme {
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Fraunces Variable', 'Iowan Old Style', Georgia, serif;
+  --font-arabic: 'Amiri', 'Geeza Pro', 'Noto Naskh Arabic', serif;
+
+  --color-brand: #0778d4;
+  --color-navy: #223a7b;
+  --color-teal: #66b3bc;
+  --color-gold: #c9a45c;
+
+  --color-ink: #081530;
+  --color-ink-2: #0d1f45;
+  --color-mist: #f4f6f9;
+  --color-paper: #ffffff;
+  --color-slate-ink: #13203d;
+
+  --ease-calm: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    @apply bg-mist font-sans text-slate-ink;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-brand);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']) {
+    cursor: pointer;
+  }
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: 'tnum', 'lnum';
+}
+
+@utility eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-weight: 600;
+}
+
+/* ───────────── Live stage ───────────── */
+
+.stage-bg {
+  background:
+    radial-gradient(1200px 800px at 12% -10%, color-mix(in oklab, var(--color-brand) 30%, transparent), transparent 70%),
+    radial-gradient(900px 700px at 105% 110%, color-mix(in oklab, var(--color-teal) 16%, transparent), transparent 70%),
+    linear-gradient(160deg, color-mix(in oklab, var(--color-navy) 60%, var(--color-ink)) 0%, var(--color-ink) 55%, color-mix(in oklab, var(--color-ink) 70%, black) 100%);
+}
+.stage-bg-solid {
+  background: var(--color-ink);
+}
+
+.stage-grain {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+}
+
+.text-glow {
+  text-shadow: 0 0 60px color-mix(in oklab, var(--color-brand) 45%, transparent);
+}
+
+@keyframes drift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(40px, -30px, 0) scale(1.08); }
+}
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(24px); filter: blur(6px); }
+  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+@keyframes feed-in {
+  0% { opacity: 0; transform: translateY(-18px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes feed-glow {
+  0% { background-color: color-mix(in oklab, var(--color-brand) 28%, transparent); }
+  100% { background-color: transparent; }
+}
+@keyframes slide-in {
+  from { opacity: 0; transform: scale(1.015); filter: blur(8px); }
+  to { opacity: 1; transform: scale(1); filter: blur(0); }
+}
+@keyframes slide-out {
+  from { opacity: 1; transform: scale(1); filter: blur(0); }
+  to { opacity: 0; transform: scale(0.99); filter: blur(8px); }
+}
+@keyframes shimmer {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(250%); }
+}
+@keyframes pulse-ring {
+  0% { transform: translate(-50%, -50%) scale(0.4); opacity: 0.9; }
+  100% { transform: translate(-50%, -50%) scale(3.2); opacity: 0; }
+}
+@keyframes breathe {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+@keyframes live-dot {
+  0%, 100% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--color-teal) 70%, transparent); }
+  50% { box-shadow: 0 0 0 10px transparent; }
+}
+@keyframes mote {
+  0% { transform: translate3d(0, 0, 0); opacity: 0; }
+  15% { opacity: 1; }
+  100% { transform: translate3d(var(--dx, 0px), -520px, 0); opacity: 0; }
+}
+@keyframes bloom {
+  0% { opacity: 0; transform: scale(0.6); }
+  30% { opacity: 1; }
+  100% { opacity: 0; transform: scale(1.4); }
+}
+@keyframes ring-out {
+  0% { transform: translate(-50%, -50%) scale(0.2); opacity: 0; }
+  20% { opacity: 0.6; }
+  100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; }
+}
+@keyframes chip-in {
+  from { opacity: 0; transform: translateY(20px) scale(0.92); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes number-flash {
+  0% { color: inherit; }
+  20% { color: var(--flash-color, #fff); text-shadow: 0 0 80px var(--flash-color, #fff); }
+  100% { color: inherit; }
+}
+
+.anim-drift { animation: drift 38s ease-in-out infinite; }
+.anim-rise { animation: rise-in 0.9s var(--ease-calm) both; }
+.anim-feed-in { animation: feed-in 0.8s var(--ease-calm) both; }
+.anim-feed-glow { animation: feed-glow 3.5s ease-out both; }
+.anim-slide-in { animation: slide-in 0.9s var(--ease-calm) both; }
+.anim-slide-out { animation: slide-out 0.6s ease-in both; }
+.anim-shimmer { animation: shimmer 3.8s ease-in-out infinite; }
+.anim-breathe { animation: breathe 3.2s ease-in-out infinite; }
+.anim-live-dot { animation: live-dot 2.4s ease-in-out infinite; }
+.anim-chip-in { animation: chip-in 0.7s var(--ease-calm) both; }
+
+/* Motion off: OS preference, or the "Calm motion" display setting. */
+[data-motion='reduced'] *,
+[data-motion='reduced'] *::before,
+[data-motion='reduced'] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+[data-motion='reduced'] .motion-decor {
+  display: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .motion-decor { display: none !important; }
+}
+
+/* ───────────── Gift celebrations ───────────── */
+@keyframes gain-flare {
+  0% { opacity: 0; }
+  12% { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes head-bump {
+  0% { transform: translate(-50%, -50%) scale(1); opacity: 0.95; }
+  100% { transform: translate(-50%, -50%) scale(3.4); opacity: 0; }
+}
+@keyframes float-up {
+  0% { transform: translate(-50%, 10px) scale(0.8); opacity: 0; }
+  14% { transform: translate(-50%, -34px) scale(1.08); opacity: 1; }
+  30% { transform: translate(-50%, -46px) scale(1); opacity: 1; }
+  100% { transform: translate(-50%, -120px) scale(1); opacity: 0; }
+}
+@keyframes flow {
+  from { background-position: 0 0; }
+  to { background-position: 208px 0; }
+}
+@keyframes count-pop {
+  0% { transform: scale(1); color: inherit; }
+  25% { transform: scale(1.18); color: var(--color-teal); }
+  100% { transform: scale(1); color: inherit; }
+}
+@keyframes bar-grow {
+  from { transform: scaleY(0.2); }
+  to { transform: scaleY(1); }
+}
+.anim-flow { animation: flow 6s linear infinite; }
+.anim-count-pop { animation: count-pop 1s var(--ease-calm) both; transform-origin: left bottom; display: inline-block; }
+@keyframes breathe-soft {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+  50% { box-shadow: 0 0 22px 2px rgba(255, 255, 255, 0.18); }
+}
+.anim-breathe-soft { animation: breathe-soft 3.2s ease-in-out infinite; }
+@keyframes card-pop {
+  0% { opacity: 0; transform: translateY(46px) scale(0.72) rotate(-2.5deg); }
+  55% { opacity: 1; transform: translateY(-4px) scale(1.04) rotate(0.4deg); }
+  100% { opacity: 1; transform: translateY(0) scale(1) rotate(0); }
+}
